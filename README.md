@@ -6,7 +6,7 @@ Replace `K0000000000` with your own Hetzner customer number.
 
 - Go to: https://accounts.hetzner.com/invoice
 - Save the page as HTML into the `data/` directory ![Save page as HTML](img/hetzner-invoice.png)
-- Run `./gelkao_calc.sh K0000000000`
+- Run `cat data/*.html | ./gelkao_calc.sh K0000000000`
 - Power users: `cat data/*.html | ./list_invoices.sh | ./fetch_invoices.sh K0000000000`
 
 ## gelkao_calc.sh(1)
@@ -18,34 +18,32 @@ gelkao_calc.sh — run the full pipeline: extract invoice UUIDs and download eve
 **SYNOPSIS**
 
 ```
-./gelkao_calc.sh <customer-number>
+cat data/*.html | ./gelkao_calc.sh <customer-number>
 ```
 
 **DESCRIPTION**
 
 Convenience wrapper for the whole flow, for when you do not care about the
-individual steps. Extracts invoice UUIDs from every `*.html` page in the input
-directory and downloads each invoice as CSV — equivalent to `list_invoices.sh`
-piped into `fetch_invoices.sh`.
+individual steps. Reads invoice HTML on stdin, extracts the invoice UUIDs, and
+downloads each invoice as CSV — equivalent to `list_invoices.sh` piped into
+`fetch_invoices.sh`.
 
 **ARGUMENTS & ENVIRONMENT**
 
 - `<customer-number>` — required; your Hetzner customer number (e.g.
   `K0000000000`). May instead be supplied via the `HETZNER_CN` environment
   variable.
-- `DATA_DIR` — directory of saved invoice HTML (default `data`).
-- `OUT_DIR` — directory for CSV output (default `data`).
+- `DATA_DIR` — directory for CSV output (default `data`).
 
 **EXIT STATUS**
 
-`0` completed · `1` no customer number, no HTML files found, or no UUIDs found.
+`0` completed · `1` no customer number, or no UUIDs found on stdin.
 
 **EXAMPLES**
 
 ```
-./gelkao_calc.sh K0000000000
-HETZNER_CN=K0000000000 ./gelkao_calc.sh
-DATA_DIR=pages OUT_DIR=out ./gelkao_calc.sh K0000000000
+cat data/*.html | ./gelkao_calc.sh K0000000000
+cat data/invoice.html | HETZNER_CN=K0000000000 ./gelkao_calc.sh
 ```
 
 ## list_invoices.sh(1)
