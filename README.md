@@ -1,16 +1,51 @@
-# cloud-efficiency-calculator
+# Cloud (in)Efficiency Calculator
 
 ## Quick start
 
+Replace `K0000000000` with your own Hetzner customer number.
+
 - Go to: https://accounts.hetzner.com/invoice
 - Save the page as HTML into the `data/` directory ![Save page as HTML](img/hetzner-invoice.png)
+- Run `./gelkao_calc.sh K0000000000`
+- Power users: `cat data/*.html | ./list_invoices.sh | ./fetch_invoices.sh K0000000000`
 
-Then run the whole pipeline — extract the invoice UUIDs and download each
-itemized invoice as CSV into `data/`. Replace `K0000000000` with your own
-Hetzner customer number:
+## gelkao_calc.sh(1)
+
+**NAME**
+
+gelkao_calc.sh — run the full pipeline: extract invoice UUIDs and download every CSV
+
+**SYNOPSIS**
 
 ```
-cat data/*.html | ./list_invoices.sh | ./fetch_invoices.sh K0000000000
+./gelkao_calc.sh <customer-number>
+```
+
+**DESCRIPTION**
+
+Convenience wrapper for the whole flow, for when you do not care about the
+individual steps. Extracts invoice UUIDs from every `*.html` page in the input
+directory and downloads each invoice as CSV — equivalent to `list_invoices.sh`
+piped into `fetch_invoices.sh`.
+
+**ARGUMENTS & ENVIRONMENT**
+
+- `<customer-number>` — required; your Hetzner customer number (e.g.
+  `K0000000000`). May instead be supplied via the `HETZNER_CN` environment
+  variable.
+- `DATA_DIR` — directory of saved invoice HTML (default `data`).
+- `OUT_DIR` — directory for CSV output (default `data`).
+
+**EXIT STATUS**
+
+`0` completed · `1` no customer number, no HTML files found, or no UUIDs found.
+
+**EXAMPLES**
+
+```
+./gelkao_calc.sh K0000000000
+HETZNER_CN=K0000000000 ./gelkao_calc.sh
+DATA_DIR=pages OUT_DIR=out ./gelkao_calc.sh K0000000000
 ```
 
 ## list_invoices.sh(1)
