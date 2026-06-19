@@ -71,3 +71,32 @@ fetch_all() {
   done
   echo "Done. downloaded=$ok skipped=$skip failed=$fail" >&2
 }
+
+import_invoices() {
+  local db=$1 data_dir=$2 f found=0
+  for f in "$data_dir"/*.csv; do
+    [ -e "$f" ] || continue
+    sqlite3 "$db" ".mode csv" ".import --skip 1 '$f' raw_invoices" 2>/dev/null
+    found=1
+  done
+  [ "$found" = 1 ] || die "no invoice CSVs in $data_dir/"
+}
+
+build_db() {
+  local db=$1 assets=$2 data_dir=$3
+  rm -f "$db"
+  sqlite3 "$db" < "$assets/schema.sql"
+  import_invoices "$db" "$data_dir"
+}
+
+report() {
+  local n
+  n=$(sqlite3 "$1" "SELECT count(*) FROM raw_invoices;")
+  printf 'invoice lines loaded: %s\n' "$n"
+}
+
+analyze() {
+  local assets=$1 data_dir=$2 db="${3:-$2/gelkao.db}"
+  build_db "$db" "$assets" "$data_dir"
+  report "$db"
+}

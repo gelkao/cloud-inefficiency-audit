@@ -5,6 +5,14 @@
 setup() {
   # shellcheck source=../lib.sh
   source "$BATS_TEST_DIRNAME/../lib.sh"
+  ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
+}
+
+invoice_csv() {  # <file> — one invoice data row (content irrelevant; Stage 0 only counts rows)
+  cat > "$1" <<CSV
+grouping,product,description,reference,quantity,from,until,condition,unit,external id,price,total
+"Project test","CX32 Cloud Server",,,"1.0000",2025-11-01,2025-11-30,,"Months","box1",,"€ 6.3000"
+CSV
 }
 
 @test "invoice_csv_url builds the CSV download URL with cn" {
@@ -73,4 +81,18 @@ HTML
   [ "$status" -eq 0 ]
   [[ "$output" == ok* ]]
   [ -f "$out/K0000000000-2024-12-$uuid.csv" ]
+}
+
+@test "analyze builds the db and reports the loaded line count" {
+  d="$BATS_TEST_TMPDIR/a"; mkdir -p "$d"; invoice_csv "$d/a.csv"; invoice_csv "$d/b.csv"
+  run analyze "$ROOT" "$d" "$BATS_TEST_TMPDIR/a.db"
+  [ "$status" -eq 0 ]
+  [ "$output" = "invoice lines loaded: 2" ]   # 2 files x 1 data row, header skipped
+}
+
+@test "build_db fails when the data dir has no CSVs" {
+  d="$BATS_TEST_TMPDIR/empty"; mkdir -p "$d"
+  run build_db "$BATS_TEST_TMPDIR/e.db" "$ROOT" "$d"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"no invoice CSVs"* ]]
 }

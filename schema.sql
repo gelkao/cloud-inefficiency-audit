@@ -1,0 +1,29 @@
+CREATE TABLE raw_invoices (
+  grouping     TEXT,
+  product      TEXT,
+  description  TEXT,
+  reference    TEXT,
+  quantity     TEXT,
+  from_date    TEXT,
+  until_date   TEXT,
+  condition    TEXT,
+  unit         TEXT,
+  external_id  TEXT,
+  price        TEXT,
+  total        TEXT
+);
+
+CREATE TABLE prices (
+  type           TEXT,
+  region         TEXT,
+  currency       TEXT,
+  effective_from TEXT,
+  price_hourly   REAL,
+  price_monthly  REAL
+);
+
+CREATE TABLE server_types (
+  type    TEXT,
+  vcpu    INTEGER,
+  ram_gb  INTEGER
+);
