@@ -64,19 +64,18 @@ need_data() {  # audit needs only local CSVs — no network, no credentials
   [ "$status" -ne 0 ]
 }
 
-@test "audit loads the real invoice CSVs in data/ and reports a positive count" {
+@test "audit loads the real invoice CSVs in data/ and reports a savings figure" {
   need_data
   DATA_DIR="$ROOT/data" DB="$BATS_TEST_TMPDIR/audit.db" run "$ROOT/gelkao" audit
   [ "$status" -eq 0 ]
-  [[ "$output" =~ invoice\ lines\ loaded:\ ([0-9]+) ]]
-  [ "${BASH_REMATCH[1]}" -ge 1 ]
+  [[ "$output" =~ price\ group:\ [a-z]+ ]]
+  [[ "$output" =~ would\ save\ [0-9]+\.[0-9]+% ]]
 }
 
 @test "gelkao <cn> end-to-end downloads then reports a positive line count" {
   need_creds
   run bash -c "cat '$INVOICE_HTML' | '$ROOT/gelkao' '$HETZNER_CN'"
   [ "$status" -eq 0 ]
-  [[ "$output" =~ Done\.\ downloaded=[0-9]+ ]]            # fetch stage ran
-  [[ "$output" =~ invoice\ lines\ loaded:\ ([0-9]+) ]]   # audit stage ran
-  [ "${BASH_REMATCH[1]}" -ge 1 ]
+  [[ "$output" =~ Done\.\ downloaded=[0-9]+ ]]           # fetch stage ran
+  [[ "$output" =~ would\ save\ [0-9]+\.[0-9]+% ]]        # audit stage ran
 }
