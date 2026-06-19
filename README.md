@@ -166,6 +166,17 @@ echo 00000000-0000-0000-0000-000000000000 | ./fetch_invoices.sh K0000000000
 echo 00000000-0000-0000-0000-000000000000 | HETZNER_CN=K0000000000 ./fetch_invoices.sh
 ```
 
+## Tests
+
+```
+HETZNER_CN=K... INVOICE_HTML=data/your-invoices.html bats tests/*
+```
+
+- The scripts share their logic through `lib.sh`.
+- `bats/unit.bats` tests cover those functions with no network and no credentials
+- `bats/integration.bats`  tests require real customer number and real HTML ivoice page
+
+
 ## References
 
 - [Hetzner 2024-10 Billing System Changes](https://docs.hetzner.com/general/billing-and-account-management/billing-at-hetzner/billing-system-hetzner/)
