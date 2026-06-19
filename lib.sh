@@ -18,3 +18,56 @@ list_invoices() {
   printf '%s\n' "$uuids"
 }
 
+invoice_csv_url() { printf 'https://usage.hetzner.com/%s?csv&cn=%s' "$1" "$2"; }
+
+month_of_csv() {
+  local d
+  d=$(grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' "$1" | head -1 || true)
+  printf '%s' "${d:0:7}"
+}
+
+
+fetch_one() {
+  local uuid=$1 cn=$2 out_dir=$3 staging month out
+  local existing=( "$out_dir/${cn}"-*-"${uuid}.csv" )
+
+  if [[ -e "${existing[0]}" ]]; then
+    printf 'skip\t%s\n' "${existing[0]}"
+    return 10
+  fi
+
+  staging="$out_dir/.${uuid}.part"
+  if ! curl -sSfL -o "$staging" "$(invoice_csv_url "$uuid" "$cn")"; then
+    rm -f "$staging"
+    printf 'fail\t%s\n' "$uuid" >&2
+    return 1
+  fi
+
+  month=$(month_of_csv "$staging")
+  if [[ -z "$month" ]]; then
+    rm -f "$staging"
+    printf 'fail\t%s\tno-dates\n' "$uuid" >&2
+    return 1
+  fi
+
+  out="$out_dir/${cn}-${month}-${uuid}.csv"
+  mv "$staging" "$out"
+  printf 'ok\t%s\n' "$out"
+  return 0
+}
+
+fetch_all() {
+  local cn=$1 out_dir=${2:-data} uuid rc ok=0 skip=0 fail=0
+  mkdir -p "$out_dir"
+  while read -r uuid; do
+    [[ -n "${uuid:-}" ]] || continue
+    rc=0
+    fetch_one "$uuid" "$cn" "$out_dir" || rc=$?
+    case $rc in
+      0)  ok=$((ok+1)) ;;
+      10) skip=$((skip+1)) ;;
+      *)  fail=$((fail+1)) ;;
+    esac
+  done
+  echo "Done. downloaded=$ok skipped=$skip failed=$fail" >&2
+}

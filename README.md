@@ -1,14 +1,16 @@
 # cloud-efficiency-calculator
 
-## Get invoice list as HTML
+## Quick start
 
 - Go to: https://accounts.hetzner.com/invoice
 - Save the page as HTML into the `data/` directory ![Save page as HTML](img/hetzner-invoice.png)
 
-Then extract the UUIDs from all saved pages:
+Then run the whole pipeline — extract the invoice UUIDs and download each
+itemized invoice as CSV into `data/`. Replace `K0000000000` with your own
+Hetzner customer number:
 
 ```
-cat data/*.html | ./list_invoices.sh
+cat data/*.html | ./list_invoices.sh | ./fetch_invoices.sh K0000000000
 ```
 
 ## list_invoices.sh(1)
@@ -55,6 +57,81 @@ cat data/invoice-list.html | ./list_invoices.sh
 cat data/*.html | ./list_invoices.sh | sort -u
 ```
 
+## fetch_invoices.sh(1)
+
+**NAME**
+
+fetch_invoices.sh — download Hetzner itemized invoices as CSV by UUID
+
+**SYNOPSIS**
+
+```
+echo 00000000-0000-0000-0000-000000000000 | ./fetch_invoices.sh <customer-number>
+```
+
+**DESCRIPTION**
+
+Reads invoice UUIDs on stdin (one per line) and downloads each itemized invoice
+as CSV from `https://usage.hetzner.com/<uuid>?csv&cn=<customer-number>`. Files
+are written to `data/` as `<customer-number>-<YYYY-MM>-<uuid>.csv`, where the
+year-month comes from the first ISO date in the CSV. Because the UUID is part of
+the filename, an invoice that is already present is detected and skipped
+**before** downloading (the month is wildcarded in the lookup) — so re-runs and
+retries cost no network request for work already done.
+
+**ARGUMENTS & ENVIRONMENT**
+
+- `<customer-number>` — required; your Hetzner customer number (e.g.
+  `K0000000000`). May instead be supplied via the `HETZNER_CN` environment
+  variable.
+- `OUT_DIR` — output directory (default `data`).
+
+**OUTPUT**
+
+`ok` / `skip` progress lines on stdout, `fail` lines on stderr, and a final
+`Done. downloaded=N skipped=N failed=N` summary on stderr. CSV files land in
+`data/`.
+
+**EXIT STATUS**
+
+`0` completed (individual download failures are reported but do not abort the
+run) · `1` no customer number supplied.
+
+**NOTES**
+
+The tool downloads sequentially with no artificial delay, and that is
+intentional. Probing the endpoint shows it exposes no client-visible rate-limit
+signalling: both successful (`200`) and rejected (`401`) responses from
+`usage.hetzner.com` carry no `RateLimit-*`, `Retry-After`, or quota headers, and
+it is served through Hetzner's edge cache (`server: HeRay`) rather than the
+Cloud API — a separate system with a documented limit of 3600 requests per hour.
+Invoice volume is small (one file per month since the format launched), and a
+re-run skips already-downloaded invoices without re-fetching them, so an
+interrupted or rate-limited run is cheap to repeat.
+
+**SECURITY**
+
+Downloading an invoice needs two independent secrets — the per-invoice UUID and
+your account's customer number (the `K…` value passed as `cn`). No browser login
+or session cookie is involved; the two values together are the credential, much
+like a second factor. Notes:
+
+- A UUID on its own will not download anything — the matching customer number
+  must also be supplied. But that number is the same for every invoice on the
+  account and is low-entropy, so once it is known the UUID is effectively the
+  only per-invoice secret.
+- Treat both the UUID list and the customer number as sensitive, and the
+  downloaded CSVs as billing data. `data/` is gitignored by default — keep it
+  out of version control, logs, tickets, and shared locations.
+
+**EXAMPLES**
+
+```
+echo 00000000-0000-0000-0000-000000000000 | ./fetch_invoices.sh K0000000000
+echo 00000000-0000-0000-0000-000000000000 | HETZNER_CN=K0000000000 ./fetch_invoices.sh
+```
+
 ## References
 
 - [Hetzner 2024-10 Billing System Changes](https://docs.hetzner.com/general/billing-and-account-management/billing-at-hetzner/billing-system-hetzner/)
+- [Hetzner Cloud API — Rate Limiting (3600 requests/hour)](https://docs.hetzner.cloud/#rate-limiting)
