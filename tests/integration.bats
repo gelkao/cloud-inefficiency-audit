@@ -23,6 +23,12 @@ need_creds() {
   [[ -f "${INVOICE_HTML}"   ]] || skip "INVOICE_HTML not found: ${INVOICE_HTML}"
 }
 
+need_data() {  # analyze needs only local CSVs — no network, no credentials
+  shopt -s nullglob
+  local csvs=( "$ROOT"/data/*.csv )
+  [ "${#csvs[@]}" -ge 1 ] || skip "no CSVs in data/ — run the fetch pipeline first"
+}
+
 @test "list_invoices yields at least one well-formed UUID" {
   need_creds
   run bash -c "cat '$INVOICE_HTML' | '$ROOT/list_invoices.sh'"
@@ -56,4 +62,13 @@ need_creds() {
   # Unset HETZNER_CN so the suite's own env can't satisfy the requirement.
   run env -u HETZNER_CN bash -c "echo 00000000-0000-0000-0000-000000000000 | '$ROOT/fetch_invoices.sh'"
   [ "$status" -ne 0 ]
+}
+
+@test "analyze loads the real invoice CSVs in data/ and reports a positive count" {
+  need_data
+  re='^invoice lines loaded: [0-9]+$'
+  DATA_DIR="$ROOT/data" DB="$BATS_TEST_TMPDIR/analyze.db" run "$ROOT/analyze.sh"
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ $re ]]
+  [ "${output##* }" -ge 1 ]
 }

@@ -164,6 +164,42 @@ echo 00000000-0000-0000-0000-000000000000 | ./fetch_invoices.sh K0000000000
 echo 00000000-0000-0000-0000-000000000000 | HETZNER_CN=K0000000000 ./fetch_invoices.sh
 ```
 
+## analyze.sh(1)
+
+**NAME**
+
+analyze.sh — load the invoice CSVs into a throwaway SQLite database
+
+**SYNOPSIS**
+
+```
+./analyze.sh [data_dir]
+```
+
+**DESCRIPTION**
+
+Builds a throwaway SQLite database from the invoice CSVs and reports how many
+lines were loaded. It creates the tables from `schema.sql`, imports every `*.csv`
+in the data directory into `raw_invoices`, and prints `invoice lines loaded: N`.
+The database lives at `data/gelkao.db` and is a disposable cache, rebuilt from the
+CSVs on every run — safe to delete.
+
+**ARGUMENTS & ENVIRONMENT**
+
+- `arg 1` / `DATA_DIR` — invoice CSV folder (default `data`).
+- `DB` — database path (default `data/gelkao.db`).
+
+**EXIT STATUS**
+
+`0` completed · `1` no invoice CSVs found in the data directory.
+
+**EXAMPLES**
+
+```
+./analyze.sh
+DATA_DIR=pages DB=/tmp/x.db ./analyze.sh
+```
+
 ## Tests
 
 ```
