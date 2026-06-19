@@ -9,12 +9,12 @@
 
 setup() {
   ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
-  OUT_DIR="$(mktemp -d)"
-  export OUT_DIR
+  DATA_DIR="$(mktemp -d)"
+  export DATA_DIR
 }
 
 teardown() {
-  [[ -n "${OUT_DIR:-}" && -d "$OUT_DIR" ]] && rm -rf "$OUT_DIR"
+  [[ -n "${DATA_DIR:-}" && -d "$DATA_DIR" ]] && rm -rf "$DATA_DIR"
 }
 
 need_creds() {
@@ -39,7 +39,7 @@ need_creds() {
   [ "$status" -eq 0 ]
   [[ "$output" =~ Done\.\ downloaded=[0-9]+\ skipped=[0-9]+\ failed=[0-9]+ ]]
   shopt -s nullglob
-  files=( "$OUT_DIR/${HETZNER_CN}"-[0-9][0-9][0-9][0-9]-[0-9][0-9]-*.csv )
+  files=( "$DATA_DIR/${HETZNER_CN}"-[0-9][0-9][0-9][0-9]-[0-9][0-9]-*.csv )
   [ "${#files[@]}" -ge 1 ]
   [ -s "${files[0]}" ]
 }

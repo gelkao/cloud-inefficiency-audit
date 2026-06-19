@@ -119,7 +119,7 @@ retries cost no network request for work already done.
 - `<customer-number>` — required; your Hetzner customer number (e.g.
   `K0000000000`). May instead be supplied via the `HETZNER_CN` environment
   variable.
-- `OUT_DIR` — output directory (default `data`).
+- `DATA_DIR` — output directory (default `data`).
 
 **OUTPUT**
 
