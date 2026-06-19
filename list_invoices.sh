@@ -5,9 +5,10 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  cat invoices.html | ./list_invoices.sh
+  cat data/*.html | ./list_invoices.sh
 
-Extracts Hetzner invoice UUIDs (one per line) from saved invoice HTML read on stdin.
+Extracts Hetzner invoice UUIDs (one per line) from saved invoice HTML read on
+stdin. Convention: keep the downloaded invoice pages in the data/ directory.
 EOF
 }
 

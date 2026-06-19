@@ -3,12 +3,12 @@
 ## Get invoice list as HTML
 
 - Go to: https://accounts.hetzner.com/invoice
-- Save page as HTML ![Save page as HTML](img/hetzner-invoice.png)
+- Save the page as HTML into the `data/` directory ![Save page as HTML](img/hetzner-invoice.png)
 
 Then extract the UUIDs from all saved pages:
 
 ```
-cat invoice-list.html | ./list_invoices.sh 
+cat data/*.html | ./list_invoices.sh
 ```
 
 ## list_invoices.sh(1)
@@ -20,19 +20,20 @@ list_invoices.sh — extract Hetzner invoice UUIDs from saved invoice HTML
 **SYNOPSIS**
 
 ```
-cat invoices.html | ./list_invoices.sh
+cat data/*.html | ./list_invoices.sh
 ```
 
 **DESCRIPTION**
 
 Reads Hetzner "Administer invoices" HTML on stdin and prints the UUID of each
 invoice, one per line. UUIDs are scraped from the per-invoice detail links of
-the form `https://usage.hetzner.com/<uuid>`.
+the form `https://usage.hetzner.com/<uuid>`. By convention the saved invoice
+pages are kept in the `data/` directory.
 
 **OUTPUT**
 
 One UUID per line, in page order. Not de-duplicated — pipe through `sort -u`
-when concatenating multiple pages (`cat data/* | ...`).
+when concatenating multiple pages (`cat data/*.html | ...`).
 
 **EXIT STATUS**
 
@@ -50,8 +51,8 @@ old invoices are present.
 **EXAMPLES**
 
 ```
-cat hetzner-invoice.html | ./list_invoices.sh
-cat *.html | ./list_invoices.sh | sort -u
+cat data/invoice-list.html | ./list_invoices.sh
+cat data/*.html | ./list_invoices.sh | sort -u
 ```
 
 ## References
