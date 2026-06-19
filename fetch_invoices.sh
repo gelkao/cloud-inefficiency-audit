@@ -14,7 +14,7 @@ as CSV into the data/ directory as <customer-number>-<YYYY-MM>-<uuid>.csv.
 Already-downloaded invoices are skipped before downloading, so retries are cheap.
 
   arg 1 / HETZNER_CN   Hetzner customer number (required)
-  OUT_DIR              output directory (default: data)
+  DATA_DIR              output directory (default: data)
 EOF
 }
 
@@ -23,4 +23,4 @@ case "${1-}" in -h|--help) usage; exit 0 ;; esac
 CN="${1:-${HETZNER_CN:-}}"
 [[ -n "$CN" ]] || die "customer number required (arg or HETZNER_CN env)"
 
-fetch_all "$CN" "${OUT_DIR:-data}"
+fetch_all "$CN" "${DATA_DIR:-data}"
