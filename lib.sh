@@ -91,15 +91,23 @@ import_invoices() {
 
 build_db() {
   local db=$1 assets=$2 data_dir=$3
+  [ -f "$assets/hetzner_prices.csv" ] || die "missing hetzner_prices.csv in $assets"
+  [ -f "$assets/server_types.csv" ]   || die "missing server_types.csv in $assets"
   rm -f "$db"
   sqlite3 "$db" < "$assets/schema.sql"
   import_invoices "$db" "$data_dir"
+  sqlite3 "$db" ".mode csv" ".import --skip 1 '$assets/hetzner_prices.csv' prices"
+  sqlite3 "$db" ".mode csv" ".import --skip 1 '$assets/server_types.csv' server_types"
+  sqlite3 "$db" < "$assets/audit.sql"
 }
 
 report() {
-  local n
-  n=$(sqlite3 "$1" "SELECT count(*) FROM raw_invoices;")
-  printf 'invoice lines loaded: %s\n' "$n"
+  sqlite3 "$1" <<'SQL'
+SELECT printf('price group: %s  —  optimal each month would save %.1f%%',
+              COALESCE((SELECT price_group FROM detected_group), 'unknown'),
+              (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid))
+FROM priced;
+SQL
 }
 
 audit() {

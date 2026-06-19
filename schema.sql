@@ -15,7 +15,7 @@ CREATE TABLE raw_invoices (
 
 CREATE TABLE prices (
   type           TEXT,
-  region         TEXT,
+  price_group    TEXT,   -- eu | usa | sin  (one price per Hetzner location group)
   currency       TEXT,
   effective_from TEXT,
   price_hourly   REAL,
