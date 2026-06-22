@@ -102,31 +102,35 @@ build_db() {
 }
 
 report() {
-  sqlite3 "$1" <<'SQL'
+  local db=$1 grouping=${2:-} filter=""
+  if [ -n "$grouping" ]; then
+    filter="WHERE grouping = '${grouping//\'/\'\'}'"
+  fi
+  sqlite3 "$db" <<SQL
 SELECT printf('price group: %s  —  optimal each month would save %.1f%%',
               COALESCE((SELECT price_group FROM detected_group), 'unknown'),
               (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid))
-FROM priced;
+FROM priced $filter;
 SELECT printf('%s  paid %-6.0f optimal %-6.0f %.0f%%',
               month, SUM(paid), SUM(optimal),
               CASE WHEN SUM(paid) > 0
                    THEN (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid) ELSE 0 END)
-FROM priced
+FROM priced $filter
 GROUP BY month
 ORDER BY month;
 SQL
 }
 
 audit() {
-  local assets=$1 data_dir=$2 db="${3:-$2/gelkao.db}"
+  local assets=$1 data_dir=$2 db="${3:-$2/gelkao.db}" grouping=${4:-}
   build_db "$db" "$assets" "$data_dir"
-  report "$db"
+  report "$db" "$grouping"
 }
 
 run_pipeline() {
-  local assets=$1 cn=$2 data_dir=${3:-data} db=${4:-} uuids
+  local assets=$1 cn=$2 data_dir=${3:-data} db=${4:-} grouping=${5:-} uuids
   uuids=$(extract_uuids || true)
   [[ -n "$uuids" ]] || die "no invoice UUIDs found on stdin"
   printf '%s\n' "$uuids" | fetch_all "$cn" "$data_dir" >&2
-  audit "$assets" "$data_dir" "$db"
+  audit "$assets" "$data_dir" "$db" "$grouping"
 }

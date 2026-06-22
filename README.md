@@ -18,10 +18,10 @@ gelkao — download Hetzner invoices as CSV and audit them
 **SYNOPSIS**
 
 ```
-cat data/*.html | ./gelkao <customer-number>
+cat data/*.html | ./gelkao [-g "<project>"] <customer-number>
 cat data/*.html | ./gelkao list
 echo 00000000-0000-0000-0000-000000000000 | ./gelkao fetch <customer-number>
-./gelkao audit [data_dir]
+./gelkao [-g "<project>"] audit [data_dir]
 ```
 
 **DESCRIPTION**
@@ -34,6 +34,12 @@ audit to stdout.
 
 The first argument is a subcommand (`list`, `fetch`, `audit`); anything else
 is treated as a customer number and runs the whole flow.
+
+**OPTIONS**
+
+- `-g "<project>"` — audit only one Hetzner project (the invoice `grouping`
+  column, e.g. `"Project prod"`). Valid for the full run and `audit` only; on
+  `list` or `fetch` it is an error.
 
 **ENVIRONMENT**
 
@@ -144,6 +150,7 @@ invoice CSVs found in the data directory.
 
 ```
 ./gelkao audit
+./gelkao -g "Project prod" audit
 DATA_DIR=pages DB=/tmp/x.db ./gelkao audit
 ```
 
