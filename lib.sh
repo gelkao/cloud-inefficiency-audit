@@ -4,6 +4,13 @@ UUID_RE='[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
 die() { echo "error: $*" >&2; exit 1; }
 
+info() {
+  local fd=$1 msg=$2 g='' r=''
+  [ -t "$fd" ] && { g=$'\e[90m'; r=$'\e[0m'; }
+  if [ "$fd" = 2 ]; then printf '%s%s%s\n' "$g" "$msg" "$r" >&2
+  else printf '%s%s%s\n' "$g" "$msg" "$r"; fi
+}
+
 extract_uuids() {
   grep -ohiE "usage\.hetzner\.com/${UUID_RE}" "$@" | sed 's|.*/||'
 }
@@ -32,7 +39,7 @@ fetch_one() {
   local existing=( "$data_dir/${cn}"-*-"${uuid}.csv" )
 
   if [[ -e "${existing[0]}" ]]; then
-    printf 'skip\t%s\n' "${existing[0]}"
+    info 1 "skip"$'\t'"${existing[0]}"
     return 10
   fi
 
@@ -52,7 +59,7 @@ fetch_one() {
 
   out="$data_dir/${cn}-${month}-${uuid}.csv"
   mv "$staging" "$out"
-  printf 'ok\t%s\n' "$out"
+  info 1 "ok"$'\t'"$out"
   return 0
 }
 
@@ -69,7 +76,7 @@ fetch_all() {
       *)  fail=$((fail+1)) ;;
     esac
   done
-  echo "Done. downloaded=$ok skipped=$skip failed=$fail" >&2
+  info 2 "Done. downloaded=$ok skipped=$skip failed=$fail"
 }
 
 import_invoices() {

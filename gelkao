@@ -19,6 +19,12 @@ Usage:
 EOF
 }
 
+banner() {
+  local b='' u='' r=''
+  if [ -t 2 ]; then b=$'\e[1m'; u=$'\e[34m'; r=$'\e[0m'; fi
+  printf '\n%sCloud Inefficiency Audit%s · %shttps://gelkao.com%s\n\n' "$b" "$r" "$u" "$r" >&2
+}
+
 cmd_list() { list_invoices "$@"; }
 
 cmd_fetch() {
@@ -34,6 +40,7 @@ cmd_audit() {
 cmd_run() {
   local cn="${1:-${HETZNER_CN:-}}"
   [[ -n "$cn" ]] || die "customer number required (arg or HETZNER_CN env)"
+  banner
   run_pipeline "$here" "$cn" "${DATA_DIR:-data}" "${DB:-}"
 }
 
