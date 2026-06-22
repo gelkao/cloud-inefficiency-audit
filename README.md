@@ -13,7 +13,7 @@ Replace `K0000000000` with your own Hetzner customer number.
 
 **NAME**
 
-gelkao_calc.sh — run the full pipeline: extract invoice UUIDs and download every CSV
+gelkao_calc.sh — download every invoice CSV, then analyze
 
 **SYNOPSIS**
 
@@ -24,9 +24,10 @@ cat data/*.html | ./gelkao_calc.sh <customer-number>
 **DESCRIPTION**
 
 Convenience wrapper for the whole flow, for when you do not care about the
-individual steps. Reads invoice HTML on stdin, extracts the invoice UUIDs, and
-downloads each invoice as CSV — equivalent to `list_invoices.sh` piped into
-`fetch_invoices.sh`.
+individual steps. Reads invoice HTML on stdin, extracts the invoice UUIDs,
+downloads each invoice as CSV, then analyzes them — equivalent to
+`list_invoices.sh` piped into `fetch_invoices.sh`, followed by `analyze.sh`.
+Download progress goes to stderr; the analysis to stdout.
 
 **ARGUMENTS & ENVIRONMENT**
 
@@ -34,6 +35,7 @@ downloads each invoice as CSV — equivalent to `list_invoices.sh` piped into
   `K0000000000`). May instead be supplied via the `HETZNER_CN` environment
   variable.
 - `DATA_DIR` — directory for CSV output (default `data`).
+- `DB` — database path (default `data/gelkao.db`).
 
 **EXIT STATUS**
 
