@@ -23,7 +23,7 @@ need_creds() {
   [[ -f "${INVOICE_HTML}"   ]] || skip "INVOICE_HTML not found: ${INVOICE_HTML}"
 }
 
-need_data() {  # analyze needs only local CSVs — no network, no credentials
+need_data() {  # audit needs only local CSVs — no network, no credentials
   shopt -s nullglob
   local csvs=( "$ROOT"/data/*.csv )
   [ "${#csvs[@]}" -ge 1 ] || skip "no CSVs in data/ — run the fetch pipeline first"
@@ -64,10 +64,10 @@ need_data() {  # analyze needs only local CSVs — no network, no credentials
   [ "$status" -ne 0 ]
 }
 
-@test "analyze loads the real invoice CSVs in data/ and reports a positive count" {
+@test "audit loads the real invoice CSVs in data/ and reports a positive count" {
   need_data
   re='^invoice lines loaded: [0-9]+$'
-  DATA_DIR="$ROOT/data" DB="$BATS_TEST_TMPDIR/analyze.db" run "$ROOT/gelkao" analyze
+  DATA_DIR="$ROOT/data" DB="$BATS_TEST_TMPDIR/audit.db" run "$ROOT/gelkao" audit
   [ "$status" -eq 0 ]
   [[ "$output" =~ $re ]]
   [ "${output##* }" -ge 1 ]
@@ -78,6 +78,6 @@ need_data() {  # analyze needs only local CSVs — no network, no credentials
   run bash -c "cat '$INVOICE_HTML' | '$ROOT/gelkao' '$HETZNER_CN'"
   [ "$status" -eq 0 ]
   [[ "$output" =~ Done\.\ downloaded=[0-9]+ ]]            # fetch stage ran
-  [[ "$output" =~ invoice\ lines\ loaded:\ ([0-9]+) ]]   # analyze stage ran
+  [[ "$output" =~ invoice\ lines\ loaded:\ ([0-9]+) ]]   # audit stage ran
   [ "${BASH_REMATCH[1]}" -ge 1 ]
 }

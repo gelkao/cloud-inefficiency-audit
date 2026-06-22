@@ -1,4 +1,4 @@
-# Cloud (in)Efficiency Calculator
+# Cloud Inefficiency Audit
 
 ## Quick start
 
@@ -7,13 +7,13 @@ Replace `K0000000000` with your own Hetzner customer number.
 - Go to: https://accounts.hetzner.com/invoice
 - Save the page as HTML into the `data/` directory ![Save page as HTML](img/hetzner-invoice.png)
 - Run `cat data/*.html | ./gelkao K0000000000`
-- Power users: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./gelkao analyze`
+- Power users: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./gelkao audit`
 
 ## gelkao(1)
 
 **NAME**
 
-gelkao — download Hetzner invoices as CSV and analyze them
+gelkao — download Hetzner invoices as CSV and audit them
 
 **SYNOPSIS**
 
@@ -21,18 +21,18 @@ gelkao — download Hetzner invoices as CSV and analyze them
 cat data/*.html | ./gelkao <customer-number>
 cat data/*.html | ./gelkao list
 echo 00000000-0000-0000-0000-000000000000 | ./gelkao fetch <customer-number>
-./gelkao analyze [data_dir]
+./gelkao audit [data_dir]
 ```
 
 **DESCRIPTION**
 
-`gelkao` downloads your Hetzner itemized invoices and analyzes them. With no
+`gelkao` downloads your Hetzner itemized invoices and audits them. With no
 subcommand it runs the whole flow: read invoice HTML on stdin, extract the
-invoice UUIDs, download each invoice as CSV, then analyze them. The individual
+invoice UUIDs, download each invoice as CSV, then audit them. The individual
 steps are also exposed as subcommands. Download progress goes to stderr; the
-analysis to stdout.
+audit to stdout.
 
-The first argument is a subcommand (`list`, `fetch`, `analyze`); anything else
+The first argument is a subcommand (`list`, `fetch`, `audit`); anything else
 is treated as a customer number and runs the whole flow.
 
 **ENVIRONMENT**
@@ -47,7 +47,7 @@ is treated as a customer number and runs the whole flow.
 
 Runs the whole flow, for when you do not care about the individual steps —
 equivalent to `gelkao list` piped into `gelkao fetch`, followed by
-`gelkao analyze`.
+`gelkao audit`.
 
 `<customer-number>` is required (e.g. `K0000000000`); it may instead be supplied
 via `HETZNER_CN`. Exit status: `0` completed · `1` no customer number, or no
@@ -130,7 +130,7 @@ echo 00000000-0000-0000-0000-000000000000 | ./gelkao fetch K0000000000
 echo 00000000-0000-0000-0000-000000000000 | HETZNER_CN=K0000000000 ./gelkao fetch
 ```
 
-### gelkao analyze [data_dir]
+### gelkao audit [data_dir]
 
 Builds a throwaway SQLite database from the invoice CSVs and reports how many
 lines were loaded. It creates the tables from `schema.sql`, imports every `*.csv`
@@ -143,8 +143,8 @@ database path (default `data/gelkao.db`). Exit status: `0` completed · `1` no
 invoice CSVs found in the data directory.
 
 ```
-./gelkao analyze
-DATA_DIR=pages DB=/tmp/x.db ./gelkao analyze
+./gelkao audit
+DATA_DIR=pages DB=/tmp/x.db ./gelkao audit
 ```
 
 ## Tests
