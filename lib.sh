@@ -107,6 +107,13 @@ SELECT printf('price group: %s  —  optimal each month would save %.1f%%',
               COALESCE((SELECT price_group FROM detected_group), 'unknown'),
               (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid))
 FROM priced;
+SELECT printf('%s  paid %-6.0f optimal %-6.0f %.0f%%',
+              month, SUM(paid), SUM(optimal),
+              CASE WHEN SUM(paid) > 0
+                   THEN (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid) ELSE 0 END)
+FROM priced
+GROUP BY month
+ORDER BY month;
 SQL
 }
 
