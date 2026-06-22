@@ -106,12 +106,13 @@ HTML
   [ -f "$out/K0000000000-2024-12-$uuid.csv" ]
 }
 
-@test "audit builds the db and reports the price group and savings" {
+@test "audit reports the price group, savings, and the monthly table" {
   a="$BATS_TEST_TMPDIR/aud"; fixture_assets "$a"
   d="$BATS_TEST_TMPDIR/a"; mkdir -p "$d"; cx33_invoice "$d/i.csv"
   run audit "$a" "$d" "$BATS_TEST_TMPDIR/a.db"
   [ "$status" -eq 0 ]
-  [ "$output" = "price group: eu  —  optimal each month would save 24.0%" ]
+  [ "${lines[0]}" = "price group: eu  —  optimal each month would save 24.0%" ]
+  [[ "${lines[1]}" =~ ^2025-11[[:space:]]+paid[[:space:]]+5[[:space:]]+optimal[[:space:]]+4[[:space:]]+24%$ ]]
 }
 
 @test "build_db fails when the data dir has no CSVs" {
