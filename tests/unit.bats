@@ -97,14 +97,14 @@ HTML
   [[ "$output" == *"no invoice CSVs"* ]]
 }
 
-@test "gelkao_calc.sh runs the whole pipeline: extract, fetch (skip), analyze" {
+@test "gelkao <cn> runs the whole pipeline: extract, fetch (skip), analyze" {
   d="$BATS_TEST_TMPDIR/g"; mkdir -p "$d"
   uuid=11111111-2222-3333-4444-555555555555
   invoice_csv "$d/K0000000000-2025-11-$uuid.csv"   # pre-seeded -> fetch skips, no network
   html="$BATS_TEST_TMPDIR/page.html"
   printf '<a href="https://usage.hetzner.com/%s">x</a>\n' "$uuid" > "$html"
 
-  run bash -c "cat '$html' | DATA_DIR='$d' '$ROOT/gelkao_calc.sh' K0000000000"
+  run bash -c "cat '$html' | DATA_DIR='$d' '$ROOT/gelkao' K0000000000"
   [ "$status" -eq 0 ]
   [[ "$output" == *"skip"* ]]                     # fetch skipped the pre-seeded invoice (no curl)
   [[ "$output" == *"invoice lines loaded: 1"* ]]  # analyze ran end-to-end

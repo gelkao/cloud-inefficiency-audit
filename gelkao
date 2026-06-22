@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib.sh
+source "$here/lib.sh"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  cat data/*.html | gelkao <customer-number>   fetch invoices and analyze
+  cat data/*.html | gelkao list                list invoice UUIDs
+  gelkao fetch <customer-number>               download invoice CSVs (UUIDs on stdin)
+  gelkao analyze [data_dir]                    build the DB from CSVs and report
+
+  HETZNER_CN   customer number (fallback for <customer-number>)
+  DATA_DIR     CSV directory (default: data)
+  DB           database path (default: <data_dir>/gelkao.db)
+EOF
+}
+
+cmd_list() { list_invoices "$@"; }
+
+cmd_fetch() {
+  local cn="${1:-${HETZNER_CN:-}}"
+  [[ -n "$cn" ]] || die "customer number required (arg or HETZNER_CN env)"
+  fetch_all "$cn" "${DATA_DIR:-data}"
+}
+
+cmd_analyze() {
+  analyze "$here" "${1:-${DATA_DIR:-data}}" "${DB:-}"
+}
+
+cmd_run() {
+  local cn="${1:-${HETZNER_CN:-}}"
+  [[ -n "$cn" ]] || die "customer number required (arg or HETZNER_CN env)"
+  run_pipeline "$here" "$cn" "${DATA_DIR:-data}" "${DB:-}"
+}
+
+main() {
+  case "${1-}" in
+    ''|-h|--help) usage; [[ -z "${1-}" ]] && exit 2 || exit 0 ;;
+    list)         shift; cmd_list "$@" ;;
+    fetch)        shift; cmd_fetch "$@" ;;
+    analyze)      shift; cmd_analyze "$@" ;;
+    *)            cmd_run "$@" ;;
+  esac
+}
+
+main "$@"
