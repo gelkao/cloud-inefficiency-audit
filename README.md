@@ -6,105 +6,83 @@ Replace `K0000000000` with your own Hetzner customer number.
 
 - Go to: https://accounts.hetzner.com/invoice
 - Save the page as HTML into the `data/` directory ![Save page as HTML](img/hetzner-invoice.png)
-- Run `cat data/*.html | ./gelkao_calc.sh K0000000000`
-- Power users: `cat data/*.html | ./list_invoices.sh | ./fetch_invoices.sh K0000000000`
+- Run `cat data/*.html | ./gelkao K0000000000`
+- Power users: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./gelkao analyze`
 
-## gelkao_calc.sh(1)
+## gelkao(1)
 
 **NAME**
 
-gelkao_calc.sh — download every invoice CSV, then analyze
+gelkao — download Hetzner invoices as CSV and analyze them
 
 **SYNOPSIS**
 
 ```
-cat data/*.html | ./gelkao_calc.sh <customer-number>
+cat data/*.html | ./gelkao <customer-number>
+cat data/*.html | ./gelkao list
+echo 00000000-0000-0000-0000-000000000000 | ./gelkao fetch <customer-number>
+./gelkao analyze [data_dir]
 ```
 
 **DESCRIPTION**
 
-Convenience wrapper for the whole flow, for when you do not care about the
-individual steps. Reads invoice HTML on stdin, extracts the invoice UUIDs,
-downloads each invoice as CSV, then analyzes them — equivalent to
-`list_invoices.sh` piped into `fetch_invoices.sh`, followed by `analyze.sh`.
-Download progress goes to stderr; the analysis to stdout.
+`gelkao` downloads your Hetzner itemized invoices and analyzes them. With no
+subcommand it runs the whole flow: read invoice HTML on stdin, extract the
+invoice UUIDs, download each invoice as CSV, then analyze them. The individual
+steps are also exposed as subcommands. Download progress goes to stderr; the
+analysis to stdout.
 
-**ARGUMENTS & ENVIRONMENT**
+The first argument is a subcommand (`list`, `fetch`, `analyze`); anything else
+is treated as a customer number and runs the whole flow.
 
-- `<customer-number>` — required; your Hetzner customer number (e.g.
-  `K0000000000`). May instead be supplied via the `HETZNER_CN` environment
-  variable.
-- `DATA_DIR` — directory for CSV output (default `data`).
+**ENVIRONMENT**
+
+- `HETZNER_CN` — customer number; fallback for `<customer-number>`.
+- `DATA_DIR` — CSV directory (default `data`).
 - `DB` — database path (default `data/gelkao.db`).
 
-**EXIT STATUS**
+**COMMANDS**
 
-`0` completed · `1` no customer number, or no UUIDs found on stdin.
+### gelkao &lt;customer-number&gt;
 
-**EXAMPLES**
+Runs the whole flow, for when you do not care about the individual steps —
+equivalent to `gelkao list` piped into `gelkao fetch`, followed by
+`gelkao analyze`.
 
-```
-cat data/*.html | ./gelkao_calc.sh K0000000000
-cat data/invoice.html | HETZNER_CN=K0000000000 ./gelkao_calc.sh
-```
-
-## list_invoices.sh(1)
-
-**NAME**
-
-list_invoices.sh — extract Hetzner invoice UUIDs from saved invoice HTML
-
-**SYNOPSIS**
+`<customer-number>` is required (e.g. `K0000000000`); it may instead be supplied
+via `HETZNER_CN`. Exit status: `0` completed · `1` no customer number, or no
+UUIDs found on stdin.
 
 ```
-cat data/*.html | ./list_invoices.sh
+cat data/*.html | ./gelkao K0000000000
+cat data/invoice.html | HETZNER_CN=K0000000000 ./gelkao
 ```
 
-**DESCRIPTION**
+### gelkao list
 
 Reads Hetzner "Administer invoices" HTML on stdin and prints the UUID of each
 invoice, one per line. UUIDs are scraped from the per-invoice detail links of
 the form `https://usage.hetzner.com/<uuid>`. By convention the saved invoice
 pages are kept in the `data/` directory.
 
-**OUTPUT**
+**OUTPUT** — one UUID per line, in page order. Not de-duplicated — pipe through
+`sort -u` when concatenating multiple pages (`cat data/*.html | ...`).
 
-One UUID per line, in page order. Not de-duplicated — pipe through `sort -u`
-when concatenating multiple pages (`cat data/*.html | ...`).
+**EXIT STATUS** — `0` UUIDs found · `1` none found (prints a warning to stderr —
+usually means Hetzner changed the URL scheme).
 
-**EXIT STATUS**
-
-`0` UUIDs found · `1` none found (prints a warning to stderr — usually means
-Hetzner changed the URL scheme).
-
-**LIMITATIONS**
-
-Only post-2024-10-01 invoices are listed. The `usage.hetzner.com/<uuid>` detail
-link is the new itemized-invoice format Hetzner rolled out on 1 Oct 2024; older
-invoices use numeric IDs (`/invoice/<id>/pdf`) with no UUID and are
-intentionally skipped. Expect fewer UUIDs than the page's total row count when
-old invoices are present.
-
-**EXAMPLES**
+**LIMITATIONS** — only post-2024-10-01 invoices are listed. The
+`usage.hetzner.com/<uuid>` detail link is the new itemized-invoice format
+Hetzner rolled out on 1 Oct 2024; older invoices use numeric IDs
+(`/invoice/<id>/pdf`) with no UUID and are intentionally skipped. Expect fewer
+UUIDs than the page's total row count when old invoices are present.
 
 ```
-cat data/invoice-list.html | ./list_invoices.sh
-cat data/*.html | ./list_invoices.sh | sort -u
+cat data/invoice-list.html | ./gelkao list
+cat data/*.html | ./gelkao list | sort -u
 ```
 
-## fetch_invoices.sh(1)
-
-**NAME**
-
-fetch_invoices.sh — download Hetzner itemized invoices as CSV by UUID
-
-**SYNOPSIS**
-
-```
-echo 00000000-0000-0000-0000-000000000000 | ./fetch_invoices.sh <customer-number>
-```
-
-**DESCRIPTION**
+### gelkao fetch &lt;customer-number&gt;
 
 Reads invoice UUIDs on stdin (one per line) and downloads each itemized invoice
 as CSV from `https://usage.hetzner.com/<uuid>?csv&cn=<customer-number>`. Files
@@ -114,27 +92,17 @@ the filename, an invoice that is already present is detected and skipped
 **before** downloading (the month is wildcarded in the lookup) — so re-runs and
 retries cost no network request for work already done.
 
-**ARGUMENTS & ENVIRONMENT**
+`<customer-number>` is required (e.g. `K0000000000`); it may instead be supplied
+via `HETZNER_CN`. `DATA_DIR` sets the output directory (default `data`).
 
-- `<customer-number>` — required; your Hetzner customer number (e.g.
-  `K0000000000`). May instead be supplied via the `HETZNER_CN` environment
-  variable.
-- `DATA_DIR` — output directory (default `data`).
+**OUTPUT** — `ok` / `skip` progress lines on stdout, `fail` lines on stderr, and
+a final `Done. downloaded=N skipped=N failed=N` summary on stderr. CSV files
+land in `data/`.
 
-**OUTPUT**
+**EXIT STATUS** — `0` completed (individual download failures are reported but do
+not abort the run) · `1` no customer number supplied.
 
-`ok` / `skip` progress lines on stdout, `fail` lines on stderr, and a final
-`Done. downloaded=N skipped=N failed=N` summary on stderr. CSV files land in
-`data/`.
-
-**EXIT STATUS**
-
-`0` completed (individual download failures are reported but do not abort the
-run) · `1` no customer number supplied.
-
-**NOTES**
-
-The tool downloads sequentially with no artificial delay, and that is
+**NOTES** — the tool downloads sequentially with no artificial delay, and that is
 intentional. Probing the endpoint shows it exposes no client-visible rate-limit
 signalling: both successful (`200`) and rejected (`401`) responses from
 `usage.hetzner.com` carry no `RateLimit-*`, `Retry-After`, or quota headers, and
@@ -144,12 +112,10 @@ Invoice volume is small (one file per month since the format launched), and a
 re-run skips already-downloaded invoices without re-fetching them, so an
 interrupted or rate-limited run is cheap to repeat.
 
-**SECURITY**
-
-Downloading an invoice needs two independent secrets — the per-invoice UUID and
-your account's customer number (the `K…` value passed as `cn`). No browser login
-or session cookie is involved; the two values together are the credential, much
-like a second factor. Notes:
+**SECURITY** — downloading an invoice needs two independent secrets — the
+per-invoice UUID and your account's customer number (the `K…` value passed as
+`cn`). No browser login or session cookie is involved; the two values together
+are the credential, much like a second factor. Notes:
 
 - A UUID on its own will not download anything — the matching customer number
   must also be supplied. But that number is the same for every invoice on the
@@ -159,47 +125,26 @@ like a second factor. Notes:
   downloaded CSVs as billing data. `data/` is gitignored by default — keep it
   out of version control, logs, tickets, and shared locations.
 
-**EXAMPLES**
-
 ```
-echo 00000000-0000-0000-0000-000000000000 | ./fetch_invoices.sh K0000000000
-echo 00000000-0000-0000-0000-000000000000 | HETZNER_CN=K0000000000 ./fetch_invoices.sh
+echo 00000000-0000-0000-0000-000000000000 | ./gelkao fetch K0000000000
+echo 00000000-0000-0000-0000-000000000000 | HETZNER_CN=K0000000000 ./gelkao fetch
 ```
 
-## analyze.sh(1)
-
-**NAME**
-
-analyze.sh — load the invoice CSVs into a throwaway SQLite database
-
-**SYNOPSIS**
-
-```
-./analyze.sh [data_dir]
-```
-
-**DESCRIPTION**
+### gelkao analyze [data_dir]
 
 Builds a throwaway SQLite database from the invoice CSVs and reports how many
 lines were loaded. It creates the tables from `schema.sql`, imports every `*.csv`
 in the data directory into `raw_invoices`, and prints `invoice lines loaded: N`.
-The database lives at `data/gelkao.db` and is a disposable cache, rebuilt from the
-CSVs on every run — safe to delete.
+The database lives at `data/gelkao.db` and is a disposable cache, rebuilt from
+the CSVs on every run — safe to delete.
 
-**ARGUMENTS & ENVIRONMENT**
-
-- `arg 1` / `DATA_DIR` — invoice CSV folder (default `data`).
-- `DB` — database path (default `data/gelkao.db`).
-
-**EXIT STATUS**
-
-`0` completed · `1` no invoice CSVs found in the data directory.
-
-**EXAMPLES**
+`arg 1` / `DATA_DIR` sets the invoice CSV folder (default `data`); `DB` sets the
+database path (default `data/gelkao.db`). Exit status: `0` completed · `1` no
+invoice CSVs found in the data directory.
 
 ```
-./analyze.sh
-DATA_DIR=pages DB=/tmp/x.db ./analyze.sh
+./gelkao analyze
+DATA_DIR=pages DB=/tmp/x.db ./gelkao analyze
 ```
 
 ## Tests
@@ -208,10 +153,9 @@ DATA_DIR=pages DB=/tmp/x.db ./analyze.sh
 HETZNER_CN=K... INVOICE_HTML=data/your-invoices.html bats tests/*
 ```
 
-- The scripts share their logic through `lib.sh`.
-- `bats/unit.bats` tests cover those functions with no network and no credentials
-- `bats/integration.bats`  tests require real customer number and real HTML ivoice page
-
+- `gelkao` shares its logic with `lib.sh`.
+- `tests/unit.bats` covers those functions with no network and no credentials.
+- `tests/integration.bats` requires a real customer number and a real invoice HTML page.
 
 ## References
 

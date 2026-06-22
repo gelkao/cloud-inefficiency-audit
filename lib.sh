@@ -100,3 +100,11 @@ analyze() {
   build_db "$db" "$assets" "$data_dir"
   report "$db"
 }
+
+run_pipeline() {
+  local assets=$1 cn=$2 data_dir=${3:-data} db=${4:-} uuids
+  uuids=$(extract_uuids || true)
+  [[ -n "$uuids" ]] || die "no invoice UUIDs found on stdin"
+  printf '%s\n' "$uuids" | fetch_all "$cn" "$data_dir" >&2
+  analyze "$assets" "$data_dir" "$db"
+}

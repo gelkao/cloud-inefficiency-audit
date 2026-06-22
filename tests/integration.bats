@@ -29,9 +29,9 @@ need_data() {  # analyze needs only local CSVs — no network, no credentials
   [ "${#csvs[@]}" -ge 1 ] || skip "no CSVs in data/ — run the fetch pipeline first"
 }
 
-@test "list_invoices yields at least one well-formed UUID" {
+@test "gelkao list yields at least one well-formed UUID" {
   need_creds
-  run bash -c "cat '$INVOICE_HTML' | '$ROOT/list_invoices.sh'"
+  run bash -c "cat '$INVOICE_HTML' | '$ROOT/gelkao' list"
   [ "$status" -eq 0 ]
   [ "${#lines[@]}" -ge 1 ]
   for line in "${lines[@]}"; do
@@ -41,7 +41,7 @@ need_data() {  # analyze needs only local CSVs — no network, no credentials
 
 @test "pipeline downloads CSVs named <CN>-YYYY-MM-<uuid>.csv and prints a summary" {
   need_creds
-  run bash -c "cat '$INVOICE_HTML' | '$ROOT/list_invoices.sh' | '$ROOT/fetch_invoices.sh' '$HETZNER_CN'"
+  run bash -c "cat '$INVOICE_HTML' | '$ROOT/gelkao' list | '$ROOT/gelkao' fetch '$HETZNER_CN'"
   [ "$status" -eq 0 ]
   [[ "$output" =~ Done\.\ downloaded=[0-9]+\ skipped=[0-9]+\ failed=[0-9]+ ]]
   shopt -s nullglob
@@ -52,30 +52,30 @@ need_data() {  # analyze needs only local CSVs — no network, no credentials
 
 @test "re-running the pipeline skips already-downloaded invoices" {
   need_creds
-  bash -c "cat '$INVOICE_HTML' | '$ROOT/list_invoices.sh' | '$ROOT/fetch_invoices.sh' '$HETZNER_CN'"
-  run bash -c "cat '$INVOICE_HTML' | '$ROOT/list_invoices.sh' | '$ROOT/fetch_invoices.sh' '$HETZNER_CN'"
+  bash -c "cat '$INVOICE_HTML' | '$ROOT/gelkao' list | '$ROOT/gelkao' fetch '$HETZNER_CN'"
+  run bash -c "cat '$INVOICE_HTML' | '$ROOT/gelkao' list | '$ROOT/gelkao' fetch '$HETZNER_CN'"
   [ "$status" -eq 0 ]
   [[ "$output" =~ downloaded=0 ]]
 }
 
-@test "fetch_invoices errors without a customer number (no creds needed)" {
+@test "gelkao fetch errors without a customer number (no creds needed)" {
   # Unset HETZNER_CN so the suite's own env can't satisfy the requirement.
-  run env -u HETZNER_CN bash -c "echo 00000000-0000-0000-0000-000000000000 | '$ROOT/fetch_invoices.sh'"
+  run env -u HETZNER_CN bash -c "echo 00000000-0000-0000-0000-000000000000 | '$ROOT/gelkao' fetch"
   [ "$status" -ne 0 ]
 }
 
 @test "analyze loads the real invoice CSVs in data/ and reports a positive count" {
   need_data
   re='^invoice lines loaded: [0-9]+$'
-  DATA_DIR="$ROOT/data" DB="$BATS_TEST_TMPDIR/analyze.db" run "$ROOT/analyze.sh"
+  DATA_DIR="$ROOT/data" DB="$BATS_TEST_TMPDIR/analyze.db" run "$ROOT/gelkao" analyze
   [ "$status" -eq 0 ]
   [[ "$output" =~ $re ]]
   [ "${output##* }" -ge 1 ]
 }
 
-@test "gelkao_calc.sh end-to-end downloads then reports a positive line count" {
+@test "gelkao <cn> end-to-end downloads then reports a positive line count" {
   need_creds
-  run bash -c "cat '$INVOICE_HTML' | '$ROOT/gelkao_calc.sh' '$HETZNER_CN'"
+  run bash -c "cat '$INVOICE_HTML' | '$ROOT/gelkao' '$HETZNER_CN'"
   [ "$status" -eq 0 ]
   [[ "$output" =~ Done\.\ downloaded=[0-9]+ ]]            # fetch stage ran
   [[ "$output" =~ invoice\ lines\ loaded:\ ([0-9]+) ]]   # analyze stage ran
