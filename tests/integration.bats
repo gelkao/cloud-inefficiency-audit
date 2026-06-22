@@ -66,11 +66,10 @@ need_data() {  # audit needs only local CSVs — no network, no credentials
 
 @test "audit loads the real invoice CSVs in data/ and reports a positive count" {
   need_data
-  re='^invoice lines loaded: [0-9]+$'
   DATA_DIR="$ROOT/data" DB="$BATS_TEST_TMPDIR/audit.db" run "$ROOT/gelkao" audit
   [ "$status" -eq 0 ]
-  [[ "$output" =~ $re ]]
-  [ "${output##* }" -ge 1 ]
+  [[ "$output" =~ invoice\ lines\ loaded:\ ([0-9]+) ]]
+  [ "${BASH_REMATCH[1]}" -ge 1 ]
 }
 
 @test "gelkao <cn> end-to-end downloads then reports a positive line count" {
