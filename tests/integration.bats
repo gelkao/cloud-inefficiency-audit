@@ -72,3 +72,12 @@ need_data() {  # analyze needs only local CSVs — no network, no credentials
   [[ "$output" =~ $re ]]
   [ "${output##* }" -ge 1 ]
 }
+
+@test "gelkao_calc.sh end-to-end downloads then reports a positive line count" {
+  need_creds
+  run bash -c "cat '$INVOICE_HTML' | '$ROOT/gelkao_calc.sh' '$HETZNER_CN'"
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ Done\.\ downloaded=[0-9]+ ]]            # fetch stage ran
+  [[ "$output" =~ invoice\ lines\ loaded:\ ([0-9]+) ]]   # analyze stage ran
+  [ "${BASH_REMATCH[1]}" -ge 1 ]
+}
