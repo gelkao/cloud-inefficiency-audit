@@ -8,14 +8,16 @@ source "$here/lib.sh"
 usage() {
   cat <<'EOF'
 Usage:
-  cat data/*.html | gelkao <customer-number>   fetch invoices and audit
-  cat data/*.html | gelkao list                list invoice UUIDs
-  gelkao fetch <customer-number>               download invoice CSVs (UUIDs on stdin)
-  gelkao audit [data_dir]                      build the DB from CSVs and audit
+  cat data/*.html | gelkao [-g "<project>"] <customer-number>   fetch invoices and audit
+  cat data/*.html | gelkao list                                 list invoice UUIDs
+  gelkao fetch <customer-number>                                download invoice CSVs (UUIDs on stdin)
+  gelkao [-g "<project>"] audit [data_dir]                      build the DB from CSVs and audit
 
-  HETZNER_CN   customer number (fallback for <customer-number>)
-  DATA_DIR     CSV directory (default: data)
-  DB           database path (default: <data_dir>/gelkao.db)
+  -g "<project>"   audit only one Hetzner project (the invoice "grouping" column);
+                   valid for the full run and audit only
+  HETZNER_CN       customer number (fallback for <customer-number>)
+  DATA_DIR         CSV directory (default: data)
+  DB               database path (default: <data_dir>/gelkao.db)
 EOF
 }
 
@@ -34,23 +36,36 @@ cmd_fetch() {
 }
 
 cmd_audit() {
-  audit "$here" "${1:-${DATA_DIR:-data}}" "${DB:-}"
+  local grouping=$1; shift
+  audit "$here" "${1:-${DATA_DIR:-data}}" "${DB:-}" "$grouping"
 }
 
 cmd_run() {
+  local grouping=$1; shift
   local cn="${1:-${HETZNER_CN:-}}"
   [[ -n "$cn" ]] || die "customer number required (arg or HETZNER_CN env)"
   banner
-  run_pipeline "$here" "$cn" "${DATA_DIR:-data}" "${DB:-}"
+  run_pipeline "$here" "$cn" "${DATA_DIR:-data}" "${DB:-}" "$grouping"
 }
 
 main() {
+  local OPTIND grouping=""
+  [[ "${1-}" = "--help" ]] && { usage; exit 0; }
+  while getopts ":g:h" opt; do
+    case "$opt" in
+      g) grouping=$OPTARG ;;
+      h) usage; exit 0 ;;
+      :) die "option -$OPTARG requires a value" ;;
+      \?) die "unknown option: -$OPTARG" ;;
+    esac
+  done
+  shift $((OPTIND - 1))
   case "${1-}" in
-    ''|-h|--help) usage; [[ -z "${1-}" ]] && exit 2 || exit 0 ;;
-    list)         shift; cmd_list "$@" ;;
-    fetch)        shift; cmd_fetch "$@" ;;
-    audit)      shift; cmd_audit "$@" ;;
-    *)            cmd_run "$@" ;;
+    '')    usage; exit 2 ;;
+    list)  shift; [[ -z "$grouping" ]] || die "-g is not valid for list";  cmd_list  "$@" ;;
+    fetch) shift; [[ -z "$grouping" ]] || die "-g is not valid for fetch"; cmd_fetch "$@" ;;
+    audit) shift; cmd_audit "$grouping" "$@" ;;
+    *)            cmd_run   "$grouping" "$@" ;;
   esac
 }
 

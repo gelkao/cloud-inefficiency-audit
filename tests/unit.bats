@@ -38,6 +38,14 @@ grouping,product,description,reference,quantity,from,until,condition,unit,extern
 CSV
 }
 
+two_project_invoice() {  # <file> — same cx33 line in two different Hetzner projects
+  cat > "$1" <<CSV
+grouping,product,description,reference,quantity,from,until,condition,unit,external id,price,total
+"Project prod","CX33 Cloud Server",,,"1.0000",2025-11-01,2025-11-30,,"Months","b1",,"€ 4.9900"
+"Project dev","CX33 Cloud Server",,,"1.0000",2025-11-01,2025-11-30,,"Months","b2",,"€ 4.9900"
+CSV
+}
+
 @test "invoice_csv_url builds the CSV download URL with cn" {
   run invoice_csv_url 00000000-0000-0000-0000-000000000000 K0000000000
   [ "$status" -eq 0 ]
@@ -113,6 +121,29 @@ HTML
   [ "$status" -eq 0 ]
   [ "${lines[0]}" = "price group: eu  —  optimal each month would save 24.0%" ]
   [[ "${lines[1]}" =~ ^2025-11[[:space:]]+paid[[:space:]]+5[[:space:]]+optimal[[:space:]]+4[[:space:]]+24%$ ]]
+}
+
+@test "audit -g scopes the report to a single project" {
+  a="$BATS_TEST_TMPDIR/aud2"; fixture_assets "$a"
+  d="$BATS_TEST_TMPDIR/a2"; mkdir -p "$d"; two_project_invoice "$d/i.csv"
+
+  run audit "$a" "$d" "$BATS_TEST_TMPDIR/a2.db"
+  [ "$status" -eq 0 ]
+  [[ "${lines[1]}" =~ ^2025-11[[:space:]]+paid[[:space:]]+10[[:space:]]+optimal[[:space:]]+8[[:space:]]+24%$ ]]
+
+  run audit "$a" "$d" "$BATS_TEST_TMPDIR/a2.db" "Project prod"
+  [ "$status" -eq 0 ]
+  [[ "${lines[1]}" =~ ^2025-11[[:space:]]+paid[[:space:]]+5[[:space:]]+optimal[[:space:]]+4[[:space:]]+24%$ ]]
+}
+
+@test "gelkao -g is rejected for list and fetch" {
+  run "$ROOT/gelkao" -g "Project prod" list
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"not valid for list"* ]]
+
+  run "$ROOT/gelkao" -g "Project prod" fetch K0000000000
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"not valid for fetch"* ]]
 }
 
 @test "build_db fails when the data dir has no CSVs" {
