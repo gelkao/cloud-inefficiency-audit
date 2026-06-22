@@ -83,9 +83,9 @@ HTML
   [ -f "$out/K0000000000-2024-12-$uuid.csv" ]
 }
 
-@test "analyze builds the db and reports the loaded line count" {
+@test "audit builds the db and reports the loaded line count" {
   d="$BATS_TEST_TMPDIR/a"; mkdir -p "$d"; invoice_csv "$d/a.csv"; invoice_csv "$d/b.csv"
-  run analyze "$ROOT" "$d" "$BATS_TEST_TMPDIR/a.db"
+  run audit "$ROOT" "$d" "$BATS_TEST_TMPDIR/a.db"
   [ "$status" -eq 0 ]
   [ "$output" = "invoice lines loaded: 2" ]   # 2 files x 1 data row, header skipped
 }
@@ -97,7 +97,7 @@ HTML
   [[ "$output" == *"no invoice CSVs"* ]]
 }
 
-@test "gelkao <cn> runs the whole pipeline: extract, fetch (skip), analyze" {
+@test "gelkao <cn> runs the whole pipeline: extract, fetch (skip), audit" {
   d="$BATS_TEST_TMPDIR/g"; mkdir -p "$d"
   uuid=11111111-2222-3333-4444-555555555555
   invoice_csv "$d/K0000000000-2025-11-$uuid.csv"   # pre-seeded -> fetch skips, no network
@@ -107,5 +107,5 @@ HTML
   run bash -c "cat '$html' | DATA_DIR='$d' '$ROOT/gelkao' K0000000000"
   [ "$status" -eq 0 ]
   [[ "$output" == *"skip"* ]]                     # fetch skipped the pre-seeded invoice (no curl)
-  [[ "$output" == *"invoice lines loaded: 1"* ]]  # analyze ran end-to-end
+  [[ "$output" == *"invoice lines loaded: 1"* ]]  # audit ran end-to-end
 }

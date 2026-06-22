@@ -95,7 +95,7 @@ report() {
   printf 'invoice lines loaded: %s\n' "$n"
 }
 
-analyze() {
+audit() {
   local assets=$1 data_dir=$2 db="${3:-$2/gelkao.db}"
   build_db "$db" "$assets" "$data_dir"
   report "$db"
@@ -106,5 +106,5 @@ run_pipeline() {
   uuids=$(extract_uuids || true)
   [[ -n "$uuids" ]] || die "no invoice UUIDs found on stdin"
   printf '%s\n' "$uuids" | fetch_all "$cn" "$data_dir" >&2
-  analyze "$assets" "$data_dir" "$db"
+  audit "$assets" "$data_dir" "$db"
 }
