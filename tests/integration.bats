@@ -68,8 +68,8 @@ need_data() {  # audit needs only local CSVs — no network, no credentials
   need_data
   DATA_DIR="$ROOT/data" DB="$BATS_TEST_TMPDIR/audit.db" run "$ROOT/gelkao" audit
   [ "$status" -eq 0 ]
-  [[ "$output" =~ price\ group:\ [a-z]+ ]]
-  [[ "$output" =~ would\ save\ [0-9]+\.[0-9]+% ]]
+  [[ "$output" =~ price\ group\ +:\ [a-z]+ ]]
+  [[ "$output" =~ would\ save\ :\ [0-9]+\.[0-9]+% ]]
 }
 
 @test "gelkao <cn> end-to-end downloads then reports a positive line count" {
@@ -77,5 +77,5 @@ need_data() {  # audit needs only local CSVs — no network, no credentials
   run bash -c "cat '$INVOICE_HTML' | '$ROOT/gelkao' '$HETZNER_CN'"
   [ "$status" -eq 0 ]
   [[ "$output" =~ Done\.\ downloaded=[0-9]+ ]]           # fetch stage ran
-  [[ "$output" =~ would\ save\ [0-9]+\.[0-9]+% ]]        # audit stage ran
+  [[ "$output" =~ would\ save\ :\ [0-9]+\.[0-9]+% ]]        # audit stage ran
 }

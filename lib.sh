@@ -101,16 +101,36 @@ build_db() {
   sqlite3 "$db" < "$assets/audit.sql"
 }
 
+grouping_filter() {
+  [ -n "${1:-}" ] || return 0
+  printf "WHERE grouping = '%s'" "${1//\'/\'\'}"
+}
+
+stat_period()         { sqlite3 "$1" "SELECT printf('%s .. %s  (%d months)', MIN(month), MAX(month), COUNT(DISTINCT month)) FROM priced ${2:-};"; }
+stat_currency()       { sqlite3 "$1" "SELECT upper(MIN(currency)) FROM priced ${2:-};"; }
+stat_servers()        { sqlite3 "$1" "SELECT COUNT(DISTINCT box) FROM priced ${2:-};"; }
+account_price_group() { sqlite3 "$1" "SELECT COALESCE((SELECT price_group FROM detected_group), 'unknown');"; }
+stat_total_paid()     { sqlite3 "$1" "SELECT printf('%.2f', SUM(paid)) FROM priced ${2:-};"; }
+stat_run_rate()       { sqlite3 "$1" "SELECT printf('%.2f', SUM(CASE WHEN month = (SELECT MAX(month) FROM priced ${2:-}) THEN paid ELSE 0 END)) FROM priced ${2:-};"; }
+stat_savings_pct()    { sqlite3 "$1" "SELECT printf('%.1f', (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid)) FROM priced ${2:-};"; }
+stat_savings_amount() { sqlite3 "$1" "SELECT printf('%.0f', SUM(paid) - SUM(optimal)) FROM priced ${2:-};"; }
+
 report() {
-  local db=$1 grouping=${2:-} filter=""
-  if [ -n "$grouping" ]; then
-    filter="WHERE grouping = '${grouping//\'/\'\'}'"
-  fi
+  local db=$1 grouping=${2:-} filter rule='------------------------------------------------------------------'
+  filter=$(grouping_filter "$grouping")
+
+  printf 'period            : %s\n'                          "$(stat_period      "$db" "$filter")"
+  printf 'currency          : %s  (detected from invoices)\n' "$(stat_currency   "$db" "$filter")"
+  printf 'servers analysed  : %s\n'                          "$(stat_servers     "$db" "$filter")"
+  printf 'price group       : %s\n'                          "$(account_price_group "$db")"
+  printf 'total paid        : €%s\n'                         "$(stat_total_paid  "$db" "$filter")"
+  printf 'current run-rate  : €%s/mo (last invoice)\n'       "$(stat_run_rate    "$db" "$filter")"
+  printf '%s\n' "$rule"
+  printf 'picking the cheapest same-spec type each month would save : %s%%  (€%s)\n' \
+         "$(stat_savings_pct "$db" "$filter")" "$(stat_savings_amount "$db" "$filter")"
+  printf '%s\n' "$rule"
+
   sqlite3 "$db" <<SQL
-SELECT printf('price group: %s  —  optimal each month would save %.1f%%',
-              COALESCE((SELECT price_group FROM detected_group), 'unknown'),
-              (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid))
-FROM priced $filter;
 SELECT printf('%s  paid %-6.0f optimal %-6.0f %.0f%%',
               month, SUM(paid), SUM(optimal),
               CASE WHEN SUM(paid) > 0
