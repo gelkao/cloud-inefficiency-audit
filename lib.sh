@@ -133,8 +133,12 @@ report() {
   printf '%s\n' "$rule"
 
   sqlite3 "$db" <<SQL | sed "s/\\([0-9]*%\\)\$/$b\\1$r/"
-SELECT printf('%s  paid %-6.0f optimal %-6.0f %.0f%%',
+SELECT printf('%s  paid %-6.0f optimal %-6.0f %s %.0f%%',
               month, SUM(paid), SUM(optimal),
+              substr('########################################', 1,
+                     CASE WHEN SUM(paid) > 0
+                          THEN MAX(0, CAST((SUM(paid) - SUM(optimal)) * 40.0 / SUM(paid) AS INT))
+                          ELSE 0 END),
               CASE WHEN SUM(paid) > 0
                    THEN (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid) ELSE 0 END)
 FROM priced $filter
