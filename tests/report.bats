@@ -86,7 +86,7 @@ cx33_db() {
   [ "${lines[4]}" = "total paid        : €4.99" ]
   [ "${lines[5]}" = "current run-rate  : €4.99/mo (last invoice)" ]
   [ "${lines[7]}" = "picking the cheapest same-spec type each month would save : 24.0%  (€1)" ]
-  [[ "${lines[9]}" =~ ^2025-11[[:space:]]+paid[[:space:]]+5[[:space:]]+optimal[[:space:]]+4[[:space:]]+24%$ ]]
+  [[ "${lines[9]}" =~ ^2025-11[[:space:]]+paid[[:space:]]+5[[:space:]]+optimal[[:space:]]+4[[:space:]]+#+[[:space:]]+24%$ ]]
 }
 
 @test "audit -g scopes the whole report to one project" {
@@ -96,5 +96,5 @@ cx33_db() {
   [ "$status" -eq 0 ]
   [ "${lines[2]}" = "servers analysed  : 1" ]
   [ "${lines[3]}" = "price group       : eu" ]
-  [[ "${lines[9]}" =~ ^2025-11[[:space:]]+paid[[:space:]]+5[[:space:]]+optimal[[:space:]]+4[[:space:]]+24%$ ]]
+  [[ "${lines[9]}" =~ ^2025-11[[:space:]]+paid[[:space:]]+5[[:space:]]+optimal[[:space:]]+4[[:space:]]+#+[[:space:]]+24%$ ]]
 }
