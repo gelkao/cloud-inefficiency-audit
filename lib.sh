@@ -115,10 +115,19 @@ stat_run_rate()       { sqlite3 "$1" "SELECT printf('%.2f', SUM(CASE WHEN month 
 stat_savings_pct()    { sqlite3 "$1" "SELECT printf('%.1f', (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid)) FROM priced ${2:-};"; }
 stat_savings_amount() { sqlite3 "$1" "SELECT printf('%.0f', SUM(paid) - SUM(optimal)) FROM priced ${2:-};"; }
 
+savings_color() {
+  if   [ "$1" -ge 50 ]; then printf '%s' "$2"
+  elif [ "$1" -ge 20 ]; then printf '%s' "$3"
+  else                       printf '%s' "$4"; fi
+}
+
 report() {
   local db=$1 grouping=${2:-} filter rule='------------------------------------------------------------------'
-  local b='' r=''
-  if [ -t 1 ]; then b=$'\e[1m'; r=$'\e[0m'; fi
+  local b='' r='' red='' amber='' green='' prefix bar pct c
+  if [ -t 1 ]; then
+    b=$'\e[1m'; r=$'\e[0m'
+    red=$'\e[1;31m'; amber=$'\e[1;33m'; green=$'\e[1;32m'
+  fi
   filter=$(grouping_filter "$grouping")
 
   printf 'period            : %s%s%s\n'                       "$b" "$(stat_period      "$db" "$filter")" "$r"
@@ -132,8 +141,11 @@ report() {
          "$b" "$(stat_savings_pct "$db" "$filter")" "$r" "$b" "$(stat_savings_amount "$db" "$filter")" "$r"
   printf '%s\n' "$rule"
 
-  sqlite3 "$db" <<SQL | sed "s/\\([0-9]*%\\)\$/$b\\1$r/"
-SELECT printf('%s  paid %-6.0f optimal %-6.0f %s %.0f%%',
+  while IFS='|' read -r prefix bar pct; do
+    c=$(savings_color "$pct" "$red" "$amber" "$green")
+    printf '%s%s%s %s%%%s\n' "$prefix" "$c" "$bar" "$pct" "$r"
+  done < <(sqlite3 "$db" <<SQL
+SELECT printf('%s  paid %-6.0f optimal %-6.0f |%s|%.0f',
               month, SUM(paid), SUM(optimal),
               substr('########################################', 1,
                      CASE WHEN SUM(paid) > 0
@@ -145,6 +157,7 @@ FROM priced $filter
 GROUP BY month
 ORDER BY month;
 SQL
+)
 }
 
 audit() {

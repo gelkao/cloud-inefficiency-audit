@@ -74,6 +74,27 @@ cx33_db() {
   [ "$output" = "1" ]
 }
 
+@test "savings_color picks red at or above 50%" {
+  run savings_color 50 RED AMBER GREEN
+  [ "$output" = "RED" ]
+  run savings_color 73 RED AMBER GREEN
+  [ "$output" = "RED" ]
+}
+
+@test "savings_color picks amber from 20% up to 49%" {
+  run savings_color 20 RED AMBER GREEN
+  [ "$output" = "AMBER" ]
+  run savings_color 49 RED AMBER GREEN
+  [ "$output" = "AMBER" ]
+}
+
+@test "savings_color picks green below 20%" {
+  run savings_color 19 RED AMBER GREEN
+  [ "$output" = "GREEN" ]
+  run savings_color 0 RED AMBER GREEN
+  [ "$output" = "GREEN" ]
+}
+
 @test "audit assembles the header lines and the monthly table" {
   a="$BATS_TEST_TMPDIR/a3"; fixture_assets "$a"
   d="$BATS_TEST_TMPDIR/d3"; mkdir -p "$d"; cx33_invoice "$d/i.csv"
