@@ -18,6 +18,17 @@ Replace `K0000000000` with your own Hetzner customer number.
 
 Power users: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./gelkao audit`
 
+## Your data stays on your disk
+
+`gelkao` runs entirely on your machine - it's a local command-line tool, not a SaaS dashboard. No account, no login, nothing uploaded.
+
+- **Pull-only:** it only ever downloads your invoices from Hetzner; it never sends them anywhere.
+- **Billing data stays in `data/`**, which is gitignored — keep it out of version control, tickets,
+and shared locations.
+- **No gelkao account or password:** an invoice is fetched with two secrets you already hold — its
+`usage.hetzner.com/<uuid>` link and your customer number (`K…`) - which together act like a second
+factor.
+
 ## gelkao(1)
 
 **NAME**
