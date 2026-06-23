@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="746" height="561" viewBox="0 0 746 561" xml:space="preserve" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="14.5">
+<rect width="746" height="561" rx="8" fill="#0d1117"/>
+<text x="18" y="32.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9" font-weight="bold">Cloud Inefficiency Audit</tspan>
+<tspan fill="#c9d1d9"> · </tspan>
+<tspan fill="#58a6ff">https://gelkao.com</tspan>
+</text>
+<text x="18" y="53.5" xml:space="preserve" fill="#c9d1d9">
+</text>
+<text x="18" y="74.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">period            : </tspan>
+<tspan fill="#c9d1d9" font-weight="bold">2025-03 .. 2026-04  (14 months)</tspan>
+</text>
+<text x="18" y="95.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">currency          : </tspan>
+<tspan fill="#c9d1d9" font-weight="bold">EUR</tspan>
+<tspan fill="#c9d1d9">  (detected from invoices)</tspan>
+</text>
+<text x="18" y="116.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">servers analysed  : </tspan>
+<tspan fill="#c9d1d9" font-weight="bold">325</tspan>
+</text>
+<text x="18" y="137.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">price group       : </tspan>
+<tspan fill="#c9d1d9" font-weight="bold">eu</tspan>
+</text>
+<text x="18" y="158.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">total paid        : </tspan>
+<tspan fill="#c9d1d9" font-weight="bold">€14142.46</tspan>
+</text>
+<text x="18" y="179.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">current run-rate  : </tspan>
+<tspan fill="#c9d1d9" font-weight="bold">€1878.02</tspan>
+<tspan fill="#c9d1d9">/mo (last invoice)</tspan>
+</text>
+<text x="18" y="200.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">------------------------------------------------------------------</tspan>
+</text>
+<text x="18" y="221.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">picking the cheapest same-spec type each month would save : </tspan>
+<tspan fill="#c9d1d9" font-weight="bold">23.3%</tspan>
+<tspan fill="#c9d1d9">  (</tspan>
+<tspan fill="#c9d1d9" font-weight="bold">€3296</tspan>
+<tspan fill="#c9d1d9">)</tspan>
+</text>
+<text x="18" y="242.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">------------------------------------------------------------------</tspan>
+</text>
+<text x="18" y="263.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2025-03  paid 156    optimal 73     </tspan>
+<tspan fill="#f85149" font-weight="bold">##################### 53%</tspan>
+</text>
+<text x="18" y="284.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2025-04  paid 456    optimal 221    </tspan>
+<tspan fill="#f85149" font-weight="bold">#################### 51%</tspan>
+</text>
+<text x="18" y="305.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2025-05  paid 802    optimal 566    </tspan>
+<tspan fill="#d29922" font-weight="bold">########### 29%</tspan>
+</text>
+<text x="18" y="326.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2025-06  paid 846    optimal 632    </tspan>
+<tspan fill="#d29922" font-weight="bold">########## 25%</tspan>
+</text>
+<text x="18" y="347.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2025-07  paid 770    optimal 661    </tspan>
+<tspan fill="#3fb950" font-weight="bold">##### 14%</tspan>
+</text>
+<text x="18" y="368.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2025-08  paid 853    optimal 752    </tspan>
+<tspan fill="#3fb950" font-weight="bold">#### 12%</tspan>
+</text>
+<text x="18" y="389.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2025-09  paid 993    optimal 883    </tspan>
+<tspan fill="#3fb950" font-weight="bold">#### 11%</tspan>
+</text>
+<text x="18" y="410.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2025-10  paid 1146   optimal 852    </tspan>
+<tspan fill="#d29922" font-weight="bold">########## 26%</tspan>
+</text>
+<text x="18" y="431.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2025-11  paid 1187   optimal 891    </tspan>
+<tspan fill="#d29922" font-weight="bold">######### 25%</tspan>
+</text>
+<text x="18" y="452.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2025-12  paid 1204   optimal 913    </tspan>
+<tspan fill="#d29922" font-weight="bold">######### 24%</tspan>
+</text>
+<text x="18" y="473.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2026-01  paid 1237   optimal 947    </tspan>
+<tspan fill="#d29922" font-weight="bold">######### 23%</tspan>
+</text>
+<text x="18" y="494.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2026-02  paid 1255   optimal 965    </tspan>
+<tspan fill="#d29922" font-weight="bold">######### 23%</tspan>
+</text>
+<text x="18" y="515.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2026-03  paid 1357   optimal 1052   </tspan>
+<tspan fill="#d29922" font-weight="bold">######### 23%</tspan>
+</text>
+<text x="18" y="536.5" xml:space="preserve" fill="#c9d1d9">
+<tspan fill="#c9d1d9">2026-04  paid 1878   optimal 1437   </tspan>
+<tspan fill="#d29922" font-weight="bold">######### 23%</tspan>
+</text>
+</svg>

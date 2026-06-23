@@ -7,7 +7,16 @@ Replace `K0000000000` with your own Hetzner customer number.
 - Go to: https://accounts.hetzner.com/invoice
 - Save the page as HTML into the `data/` directory ![Save page as HTML](img/hetzner-invoice.png)
 - Run `cat data/*.html | ./gelkao K0000000000`
-- Power users: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./gelkao audit`
+
+![Cloud Inefficiency Audit sample output](img/audit-demo.svg)
+
+*Legend*
+
+- 🟥 *saving ≥ 50%*
+- 🟧 *saving 20-49%*
+- 🟩 *saving under 20%*
+
+Power users: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./gelkao audit`
 
 ## gelkao(1)
 
