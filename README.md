@@ -138,11 +138,16 @@ echo 00000000-0000-0000-0000-000000000000 | HETZNER_CN=K0000000000 ./gelkao fetc
 
 ### gelkao audit [data_dir]
 
-Builds a throwaway SQLite database from the invoice CSVs and reports how many
-lines were loaded. It creates the tables from `schema.sql`, imports every `*.csv`
-in the data directory into `raw_invoices`, and prints `invoice lines loaded: N`.
-The database lives at `data/gelkao.db` and is a disposable cache, rebuilt from
-the CSVs on every run — safe to delete.
+Builds a throwaway SQLite database from the invoice CSVs and prints the audit
+report. It creates the tables from `schema.sql`, imports every `*.csv` in the
+data directory into `raw_invoices`, then builds the `audit.sql` views. The report
+is a summary header (period, currency, servers analysed, price group, total paid,
+current run-rate), a one-line savings figure, and a month-by-month paid-vs-optimal
+table with `#` bars. On a terminal the figures are bold and each month's bar and
+percentage are coloured by savings level (red `≥50%`, amber `20–49%`, green
+`<20%`); output is plain when piped or redirected. The database lives at
+`data/gelkao.db` and is a disposable cache, rebuilt from the CSVs on every run —
+safe to delete.
 
 `arg 1` / `DATA_DIR` sets the invoice CSV folder (default `data`); `DB` sets the
 database path (default `data/gelkao.db`). Exit status: `0` completed · `1` no
@@ -157,11 +162,12 @@ DATA_DIR=pages DB=/tmp/x.db ./gelkao audit
 ## Tests
 
 ```
-HETZNER_CN=K... INVOICE_HTML=data/your-invoices.html bats tests/*
+HETZNER_CN=K... INVOICE_HTML=data/your-invoices.html bats tests/*.bats
 ```
 
 - `gelkao` shares its logic with `lib.sh`.
 - `tests/unit.bats` covers those functions with no network and no credentials.
+- `tests/report.bats` covers the audit report's field stats and assembled output.
 - `tests/integration.bats` requires a real customer number and a real invoice HTML page.
 
 ## References
