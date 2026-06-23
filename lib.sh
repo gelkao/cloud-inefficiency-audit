@@ -117,20 +117,22 @@ stat_savings_amount() { sqlite3 "$1" "SELECT printf('%.0f', SUM(paid) - SUM(opti
 
 report() {
   local db=$1 grouping=${2:-} filter rule='------------------------------------------------------------------'
+  local b='' r=''
+  if [ -t 1 ]; then b=$'\e[1m'; r=$'\e[0m'; fi
   filter=$(grouping_filter "$grouping")
 
-  printf 'period            : %s\n'                          "$(stat_period      "$db" "$filter")"
-  printf 'currency          : %s  (detected from invoices)\n' "$(stat_currency   "$db" "$filter")"
-  printf 'servers analysed  : %s\n'                          "$(stat_servers     "$db" "$filter")"
-  printf 'price group       : %s\n'                          "$(account_price_group "$db")"
-  printf 'total paid        : €%s\n'                         "$(stat_total_paid  "$db" "$filter")"
-  printf 'current run-rate  : €%s/mo (last invoice)\n'       "$(stat_run_rate    "$db" "$filter")"
+  printf 'period            : %s%s%s\n'                       "$b" "$(stat_period      "$db" "$filter")" "$r"
+  printf 'currency          : %s%s%s  (detected from invoices)\n' "$b" "$(stat_currency "$db" "$filter")" "$r"
+  printf 'servers analysed  : %s%s%s\n'                       "$b" "$(stat_servers     "$db" "$filter")" "$r"
+  printf 'price group       : %s%s%s\n'                       "$b" "$(account_price_group "$db")" "$r"
+  printf 'total paid        : %s€%s%s\n'                      "$b" "$(stat_total_paid  "$db" "$filter")" "$r"
+  printf 'current run-rate  : %s€%s%s/mo (last invoice)\n'    "$b" "$(stat_run_rate    "$db" "$filter")" "$r"
   printf '%s\n' "$rule"
-  printf 'picking the cheapest same-spec type each month would save : %s%%  (€%s)\n' \
-         "$(stat_savings_pct "$db" "$filter")" "$(stat_savings_amount "$db" "$filter")"
+  printf 'picking the cheapest same-spec type each month would save : %s%s%%%s  (%s€%s%s)\n' \
+         "$b" "$(stat_savings_pct "$db" "$filter")" "$r" "$b" "$(stat_savings_amount "$db" "$filter")" "$r"
   printf '%s\n' "$rule"
 
-  sqlite3 "$db" <<SQL
+  sqlite3 "$db" <<SQL | sed "s/\\([0-9]*%\\)\$/$b\\1$r/"
 SELECT printf('%s  paid %-6.0f optimal %-6.0f %.0f%%',
               month, SUM(paid), SUM(optimal),
               CASE WHEN SUM(paid) > 0
