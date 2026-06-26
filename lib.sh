@@ -129,7 +129,7 @@ account_price_group() { sqlite3 "$1" "SELECT COALESCE((SELECT price_group FROM d
 stat_total_paid()     { sqlite3 "$1" "SELECT printf('%.2f', SUM(paid)) FROM priced ${2:-};"; }
 stat_run_rate()       { sqlite3 "$1" "SELECT printf('%.2f', SUM(CASE WHEN month = (SELECT MAX(month) FROM priced ${2:-}) THEN paid ELSE 0 END)) FROM priced ${2:-};"; }
 stat_savings_pct()    { sqlite3 "$1" "SELECT printf('%.1f', (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid)) FROM priced ${2:-};"; }
-stat_savings_amount() { sqlite3 "$1" "SELECT printf('%.0f', SUM(paid) - SUM(optimal)) FROM priced ${2:-};"; }
+stat_savings_amount() { sqlite3 "$1" "SELECT printf('%.0f', round(SUM(paid) - SUM(optimal))) FROM priced ${2:-};"; }
 
 savings_color() {
   if   [ "$1" -ge 50 ]; then printf '%s' "$2"
@@ -162,13 +162,13 @@ report() {
     printf '%s%s%s %s%%%s\n' "$prefix" "$c" "$bar" "$pct" "$r"
   done < <(sqlite3 "$db" <<SQL
 SELECT printf('%s  paid %-6.0f optimal %-6.0f |%s|%.0f',
-              month, SUM(paid), SUM(optimal),
+              month, round(SUM(paid)), round(SUM(optimal)),
               substr('########################################', 1,
                      CASE WHEN SUM(paid) > 0
                           THEN MAX(0, CAST((SUM(paid) - SUM(optimal)) * 40.0 / SUM(paid) AS INT))
                           ELSE 0 END),
-              CASE WHEN SUM(paid) > 0
-                   THEN (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid) ELSE 0 END)
+              round(CASE WHEN SUM(paid) > 0
+                   THEN (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid) ELSE 0 END))
 FROM priced $filter
 GROUP BY month
 ORDER BY month;

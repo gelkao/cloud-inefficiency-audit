@@ -15,6 +15,14 @@ cx33_db() {
   printf '%s' "$BATS_TEST_TMPDIR/r.db"
 }
 
+rounding_db() {
+  local a="$BATS_TEST_TMPDIR/ra" d="$BATS_TEST_TMPDIR/rd"
+  rounding_assets "$a"
+  mkdir -p "$d"; rounding_invoice "$d/i.csv"
+  build_db "$BATS_TEST_TMPDIR/rr.db" "$a" "$d" >/dev/null
+  printf '%s' "$BATS_TEST_TMPDIR/rr.db"
+}
+
 @test "stat_period spans the first and last invoice month" {
   db=$(cx33_db)
   run stat_period "$db"
@@ -51,16 +59,16 @@ cx33_db() {
   [ "$output" = "4.99" ]
 }
 
-@test "stat_savings_pct compares paid against optimal" {
-  db=$(cx33_db)
+@test "stat_savings_pct rounds the savings percentage" {
+  db=$(rounding_db)
   run stat_savings_pct "$db"
-  [ "$output" = "24.0" ]
+  [ "$output" = "38.8" ]
 }
 
-@test "stat_savings_amount is the absolute gap" {
-  db=$(cx33_db)
+@test "stat_savings_amount rounds the paid-optimal gap" {
+  db=$(rounding_db)
   run stat_savings_amount "$db"
-  [ "$output" = "1" ]
+  [ "$output" = "4" ]
 }
 
 @test "stat_servers scopes to one project via the grouping filter" {
@@ -118,4 +126,12 @@ cx33_db() {
   [ "${lines[2]}" = "servers analysed  : 1" ]
   [ "${lines[3]}" = "price group       : eu" ]
   [[ "${lines[9]}" =~ ^2025-11[[:space:]]+paid[[:space:]]+5[[:space:]]+optimal[[:space:]]+4[[:space:]]+#+[[:space:]]+24%$ ]]
+}
+
+@test "the monthly table percent is rounded" {
+  a="$BATS_TEST_TMPDIR/ra2"; rounding_assets "$a"
+  d="$BATS_TEST_TMPDIR/rd2"; mkdir -p "$d"; rounding_invoice "$d/i.csv"
+  run audit "$a" "$d" "$BATS_TEST_TMPDIR/rr2.db"
+  [ "$status" -eq 0 ]
+  [[ "${lines[9]}" =~ [[:space:]]39%$ ]]
 }
