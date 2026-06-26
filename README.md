@@ -18,6 +18,16 @@ Replace `K0000000000` with your own Hetzner customer number.
 
 Power users: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./gelkao audit`
 
+## Requirements
+
+`gelkao` is a small shell tool with a few standard dependencies:
+
+- **bash** 3.2+ — the macOS system bash works.
+- **sqlite3** 3.32+ — the audit engine; older versions cannot run the `.import --skip 1` it relies on.
+- **curl** — only to download invoices (`fetch`); the audit itself needs no network.
+- standard POSIX tools (`grep`, `sed`, `head`), present on any Unix.
+- **Windows:** run it inside WSL (Windows Subsystem for Linux); it then behaves exactly like the Linux setup above.
+
 ## Your data stays on your disk
 
 `gelkao` runs entirely on your machine - it's a local command-line tool, not a SaaS dashboard. No account, no login, nothing uploaded.

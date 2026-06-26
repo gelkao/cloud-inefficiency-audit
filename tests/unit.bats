@@ -124,3 +124,32 @@ HTML
   [[ "$output" == *"skip"* ]]                     # fetch skipped the pre-seeded invoice (no curl)
   [[ "$output" == *"would save"* ]]               # audit ran end-to-end
 }
+
+@test "require_sqlite rejects sqlite older than 3.32" {
+  stub="$BATS_TEST_TMPDIR/old"; mkdir -p "$stub"
+  printf '#!/bin/sh\necho "3.7.17 2013-05-20 00:48:51"\n' > "$stub/sqlite3"
+  chmod +x "$stub/sqlite3"
+  PATH="$stub:$PATH" run require_sqlite
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"too old"* ]]
+}
+
+@test "require_sqlite accepts sqlite 3.32 or newer" {
+  stub="$BATS_TEST_TMPDIR/new"; mkdir -p "$stub"
+  printf '#!/bin/sh\necho "3.40.1 2022-12-28 14:03:47"\n' > "$stub/sqlite3"
+  chmod +x "$stub/sqlite3"
+  PATH="$stub:$PATH" run require_sqlite
+  [ "$status" -eq 0 ]
+}
+
+@test "require_sqlite fails when sqlite3 is not installed" {
+  PATH="$BATS_TEST_TMPDIR" run require_sqlite
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"install sqlite3"* ]]
+}
+
+@test "require_curl fails when curl is not installed" {
+  PATH="$BATS_TEST_TMPDIR" run require_curl
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"install curl"* ]]
+}
