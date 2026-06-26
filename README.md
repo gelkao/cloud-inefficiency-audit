@@ -29,6 +29,8 @@ and shared locations.
 `usage.hetzner.com/<uuid>` link and your customer number (`K…`) - which together act like a second
 factor.
 
+Found a security issue, or want to verify these claims yourself? See [SECURITY.md](SECURITY.md).
+
 ## gelkao(1)
 
 **NAME**
