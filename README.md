@@ -1,6 +1,6 @@
 # Cloud Inefficiency Audit
 
-[![CI](https://github.com/gelkao/cloud-inefficiency-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/gelkao/cloud-inefficiency-audit/actions/workflows/ci.yml)
+[![CI](https://github.com/gelkao/cloud-inefficiency-audit/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/gelkao/cloud-inefficiency-audit/actions/workflows/ci.yml)
 [![integration](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/dominikzalewski/696b0e161d53e5b752b2c6bc7c0fbf74/raw/cloud-inefficiency-audit-integration.json)](https://gist.github.com/dominikzalewski/696b0e161d53e5b752b2c6bc7c0fbf74)
 
 ## Quick start
