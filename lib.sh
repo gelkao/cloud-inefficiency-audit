@@ -4,6 +4,20 @@ UUID_RE='[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
 die() { echo "error: $*" >&2; exit 1; }
 
+require_sqlite() {
+  command -v sqlite3 >/dev/null 2>&1 || die "sqlite3 not found — install sqlite3 (3.32+ required)"
+  local ver maj min
+  ver=$(sqlite3 --version | cut -d' ' -f1)
+  IFS=. read -r maj min _ <<<"$ver"
+  if (( maj < 3 || (maj == 3 && min < 32) )); then
+    die "sqlite3 $ver is too old — need 3.32+ for '.import --skip 1'"
+  fi
+}
+
+require_curl() {
+  command -v curl >/dev/null 2>&1 || die "curl not found — install curl to download invoices"
+}
+
 info() {
   local fd=$1 msg=$2 g='' r=''
   [ -t "$fd" ] && { g=$'\e[90m'; r=$'\e[0m'; }
@@ -43,6 +57,7 @@ fetch_one() {
     return 10
   fi
 
+  require_curl
   staging="$data_dir/.${uuid}.part"
   if ! curl -sSfL -o "$staging" "$(invoice_csv_url "$uuid" "$cn")"; then
     rm -f "$staging"
@@ -91,6 +106,7 @@ import_invoices() {
 
 build_db() {
   local db=$1 assets=$2 data_dir=$3
+  require_sqlite
   [ -f "$assets/hetzner_prices.csv" ] || die "missing hetzner_prices.csv in $assets"
   [ -f "$assets/server_types.csv" ]   || die "missing server_types.csv in $assets"
   rm -f "$db"
