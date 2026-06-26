@@ -1,5 +1,8 @@
 # Cloud Inefficiency Audit
 
+[![CI](https://github.com/gelkao/cloud-inefficiency-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/gelkao/cloud-inefficiency-audit/actions/workflows/ci.yml)
+[![integration](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/dominikzalewski/696b0e161d53e5b752b2c6bc7c0fbf74/raw/cloud-inefficiency-audit-integration.json)](https://gist.github.com/dominikzalewski/696b0e161d53e5b752b2c6bc7c0fbf74)
+
 ## Quick start
 
 Replace `K0000000000` with your own Hetzner customer number.
@@ -193,6 +196,11 @@ DATA_DIR=pages DB=/tmp/x.db ./gelkao audit
 
 ## Tests
 
+The unit and report tests are hermetic — no network, no credentials — and run in
+CI on every push (Linux and macOS). The integration test needs a real customer
+number and a saved invoice page, secrets that must never reach a public CI runner,
+so it runs only on your machine:
+
 ```
 HETZNER_CN=K... INVOICE_HTML=data/your-invoices.html bats tests/*.bats
 ```
@@ -200,7 +208,18 @@ HETZNER_CN=K... INVOICE_HTML=data/your-invoices.html bats tests/*.bats
 - `gelkao` shares its logic with `lib.sh`.
 - `tests/unit.bats` covers those functions with no network and no credentials.
 - `tests/report.bats` covers the audit report's field stats and assembled output.
+- `tests/badge.bats` covers the badge builder's pure logic.
 - `tests/integration.bats` requires a real customer number and a real invoice HTML page.
+
+### Integration badge
+
+Because the integration test can't run in cloud CI, `./badge.sh` runs it locally
+and publishes the pass-count to a gist that backs the README's integration badge —
+so the badge reflects a real run against real invoices, not CI:
+
+```
+HETZNER_CN=K... INVOICE_HTML=data/your-invoices.html ./badge.sh
+```
 
 ## References
 
