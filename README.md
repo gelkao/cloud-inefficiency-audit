@@ -194,3 +194,7 @@ HETZNER_CN=K... INVOICE_HTML=data/your-invoices.html bats tests/*.bats
 
 - [Hetzner 2024-10 Billing System Changes](https://docs.hetzner.com/general/billing-and-account-management/billing-at-hetzner/billing-system-hetzner/)
 - [Hetzner Cloud API — Rate Limiting (3600 requests/hour)](https://docs.hetzner.cloud/#rate-limiting)
+
+## License
+
+Licensed under the Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
