@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hermetic:
+    name: hermetic tests
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bats + sqlite3
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y bats sqlite3
+          else
+            brew install bats-core
+          fi
+
+      - name: Show toolchain versions
+        run: |
+          {
+            echo "### ${{ matrix.os }} toolchain"
+            echo '```'
+            bash --version | head -1
+            sqlite3 --version
+            bats --version
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Run hermetic tests (unit + report)
+        run: |
+          bats --print-output-on-failure --formatter tap tests/unit.bats tests/report.bats tests/badge.bats | tee result.tap
+
+      - name: Prove macOS system bash 3.2 compatibility
+        if: runner.os == 'macOS'
+        run: |
+          export PATH="/bin:$PATH"
+          bash --version | head -1
+          bats --print-output-on-failure tests/unit.bats tests/report.bats tests/badge.bats
+
+      - name: Summarise results
+        if: always()
+        run: |
+          ok=$(grep -cE '^ok ' result.tap || true)
+          notok=$(grep -cE '^not ok ' result.tap || true)
+          echo "**${{ matrix.os }}: ${ok} passed, ${notok} failed**" >> "$GITHUB_STEP_SUMMARY"
+
+  lint:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint shell scripts
+        run: |
+          shellcheck --version >/dev/null 2>&1 || { sudo apt-get update && sudo apt-get install -y shellcheck; }
+          shellcheck gelkao lib.sh
+
+  integration-skip:
+    name: integration (skipped — no credentials in CI)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install bats + sqlite3
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats sqlite3
+      - name: Why these skip in CI
+        run: |
+          {
+            echo "### Integration tests"
+            echo "They touch a live Hetzner billing account — a real customer number plus a saved invoice HTML page."
+            echo "Those secrets never enter cloud CI, so the credential-dependent cases self-skip below."
+            echo "The full integration suite runs on the maintainer's machine; see the integration badge in the README."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Run integration suite (credentials absent, cases skip)
+        run: bats tests/integration.bats
