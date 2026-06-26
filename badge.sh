@@ -4,11 +4,11 @@ GIST_ID=696b0e161d53e5b752b2c6bc7c0fbf74
 GIST_FILE=cloud-inefficiency-audit-integration.json
 
 badge_json() {
-  local passed=$1 failed=$2 color message
+  local passed=$1 failed=$2 date=$3 color message
   if (( failed > 0 )); then
-    color=critical; message="${failed} failing"
+    color=critical; message="${failed} failing · ${date}"
   elif (( passed > 0 )); then
-    color=success; message="${passed} passing"
+    color=success; message="${passed} passing · ${date}"
   else
     color=lightgrey; message="not run"
   fi
@@ -42,7 +42,7 @@ main() {
   read -r passed failed < <(printf '%s\n' "$tap" | count_tap)
   echo "==> ${passed} passed, ${failed} failed" >&2
 
-  json=$(badge_json "$passed" "$failed")
+  json=$(badge_json "$passed" "$failed" "$(date +%F)")
   echo "==> publishing: $json" >&2
   if push_badge "$json"; then
     echo "==> gist updated" >&2

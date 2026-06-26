@@ -6,26 +6,26 @@ setup() {
 }
 
 @test "badge_json reports passing when nothing failed" {
-  run badge_json 12 0
+  run badge_json 12 0 2026-06-26
   [ "$status" -eq 0 ]
-  [[ "$output" == *'"message":"12 passing"'* ]]
+  [[ "$output" == *'"message":"12 passing · 2026-06-26"'* ]]
   [[ "$output" == *'"color":"success"'* ]]
 }
 
 @test "badge_json reports failing when something failed" {
-  run badge_json 8 3
-  [[ "$output" == *'"message":"3 failing"'* ]]
+  run badge_json 8 3 2026-06-26
+  [[ "$output" == *'"message":"3 failing · 2026-06-26"'* ]]
   [[ "$output" == *'"color":"critical"'* ]]
 }
 
 @test "badge_json reports not run when nothing ran" {
-  run badge_json 0 0
+  run badge_json 0 0 2026-06-26
   [[ "$output" == *'"message":"not run"'* ]]
   [[ "$output" == *'"color":"lightgrey"'* ]]
 }
 
 @test "badge_json emits the shields endpoint schema" {
-  run badge_json 1 0
+  run badge_json 1 0 2026-06-26
   [[ "$output" == *'"schemaVersion":1'* ]]
   [[ "$output" == *'"label":"integration"'* ]]
 }
