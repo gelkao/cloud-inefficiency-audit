@@ -28,6 +28,28 @@ grouping,product,description,reference,quantity,from,until,condition,unit,extern
 CSV
 }
 
+rounding_assets() {
+  mkdir -p "$1"
+  cp "$ROOT/schema.sql" "$ROOT/audit.sql" "$1/"
+  cat > "$1/hetzner_prices.csv" <<CSV
+type,price_group,currency,effective_from,price_hourly,price_monthly
+cx33,eu,eur,2025-10-01,0.0160,10.00
+cax21,eu,eur,2025-10-01,0.0090,6.125
+CSV
+  cat > "$1/server_types.csv" <<CSV
+type,vcpu,ram_gb
+cx33,4,8
+cax21,4,8
+CSV
+}
+
+rounding_invoice() {
+  cat > "$1" <<CSV
+grouping,product,description,reference,quantity,from,until,condition,unit,external id,price,total
+"P","CX33 Cloud Server",,,"1.0000",2025-11-01,2025-11-30,,"Months","b1",,"€ 10.0000"
+CSV
+}
+
 two_project_invoice() {
   cat > "$1" <<CSV
 grouping,product,description,reference,quantity,from,until,condition,unit,external id,price,total
