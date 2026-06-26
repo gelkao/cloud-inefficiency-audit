@@ -29,6 +29,19 @@ need_data() {  # audit needs only local CSVs — no network, no credentials
   [ "${#csvs[@]}" -ge 1 ] || skip "no CSVs in data/ — run the fetch pipeline first"
 }
 
+@test "update_prices fetches well-formed price and spec tables from the live endpoint" {
+  [[ -z "${GITHUB_ACTIONS:-}" ]] || skip "live price pull runs locally only, not in CI"
+  LIVE_PRICES_URL="https://gelkao.com/live"
+  source "$ROOT/lib.sh"
+  live="$BATS_TEST_TMPDIR/live"
+  run update_prices "$LIVE_PRICES_URL" "$live"
+  [ "$status" -eq 0 ]
+  [ -s "$live/hetzner/prices.csv" ]
+  [ -s "$live/hetzner/server_types.csv" ]
+  head -1 "$live/hetzner/prices.csv"       | grep -q '^type,price_group,currency'
+  head -1 "$live/hetzner/server_types.csv" | grep -q '^type,vcpu,ram_gb'
+}
+
 @test "gelkao list yields at least one well-formed UUID" {
   need_creds
   run bash -c "cat '$INVOICE_HTML' | '$ROOT/gelkao' list"
