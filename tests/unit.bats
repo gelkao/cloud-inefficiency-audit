@@ -105,11 +105,11 @@ HTML
 }
 
 @test "build_db fails when a price asset is missing" {
-  a="$BATS_TEST_TMPDIR/assets3"; fixture_assets "$a"; rm "$a/hetzner_prices.csv"
+  a="$BATS_TEST_TMPDIR/assets3"; fixture_assets "$a"; rm "$a/providers/hetzner/prices.csv"
   d="$BATS_TEST_TMPDIR/inv3"; mkdir -p "$d"; cx33_invoice "$d/i.csv"
   run build_db "$BATS_TEST_TMPDIR/f3.db" "$a" "$d"
   [ "$status" -ne 0 ]
-  [[ "$output" == *"hetzner_prices.csv"* ]]
+  [[ "$output" == *"prices.csv"* ]]
 }
 
 @test "gelkao <cn> runs the whole pipeline: extract, fetch (skip), audit" {

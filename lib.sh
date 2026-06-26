@@ -105,15 +105,15 @@ import_invoices() {
 }
 
 build_db() {
-  local db=$1 assets=$2 data_dir=$3
+  local db=$1 assets=$2 data_dir=$3 tables="$2/providers/hetzner"
   require_sqlite
-  [ -f "$assets/hetzner_prices.csv" ] || die "missing hetzner_prices.csv in $assets"
-  [ -f "$assets/server_types.csv" ]   || die "missing server_types.csv in $assets"
+  [ -f "$tables/prices.csv" ]       || die "missing prices.csv in $tables"
+  [ -f "$tables/server_types.csv" ] || die "missing server_types.csv in $tables"
   rm -f "$db"
   sqlite3 "$db" < "$assets/schema.sql"
   import_invoices "$db" "$data_dir"
-  sqlite3 "$db" ".mode csv" ".import --skip 1 '$assets/hetzner_prices.csv' prices"
-  sqlite3 "$db" ".mode csv" ".import --skip 1 '$assets/server_types.csv' server_types"
+  sqlite3 "$db" ".mode csv" ".import --skip 1 '$tables/prices.csv' prices"
+  sqlite3 "$db" ".mode csv" ".import --skip 1 '$tables/server_types.csv' server_types"
   sqlite3 "$db" < "$assets/audit.sql"
 }
 

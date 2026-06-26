@@ -6,15 +6,15 @@ CSV
 }
 
 fixture_assets() {
-  mkdir -p "$1"
+  mkdir -p "$1/providers/hetzner"
   cp "$ROOT/schema.sql" "$ROOT/audit.sql" "$1/"
-  cat > "$1/hetzner_prices.csv" <<CSV
+  cat > "$1/providers/hetzner/prices.csv" <<CSV
 type,price_group,currency,effective_from,price_hourly,price_monthly
 cx33,eu,eur,2025-10-01,0.0080,4.99
 cx33,usa,eur,2025-10-01,0.0110,6.99
 cax21,eu,eur,2025-10-01,0.0070,3.79
 CSV
-  cat > "$1/server_types.csv" <<CSV
+  cat > "$1/providers/hetzner/server_types.csv" <<CSV
 type,vcpu,ram_gb
 cx33,4,8
 cax21,4,8
@@ -29,14 +29,14 @@ CSV
 }
 
 rounding_assets() {
-  mkdir -p "$1"
+  mkdir -p "$1/providers/hetzner"
   cp "$ROOT/schema.sql" "$ROOT/audit.sql" "$1/"
-  cat > "$1/hetzner_prices.csv" <<CSV
+  cat > "$1/providers/hetzner/prices.csv" <<CSV
 type,price_group,currency,effective_from,price_hourly,price_monthly
 cx33,eu,eur,2025-10-01,0.0160,10.00
 cax21,eu,eur,2025-10-01,0.0090,6.125
 CSV
-  cat > "$1/server_types.csv" <<CSV
+  cat > "$1/providers/hetzner/server_types.csv" <<CSV
 type,vcpu,ram_gb
 cx33,4,8
 cax21,4,8
