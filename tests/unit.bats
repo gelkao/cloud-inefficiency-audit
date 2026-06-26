@@ -112,6 +112,22 @@ HTML
   [[ "$output" == *"prices.csv"* ]]
 }
 
+@test "build_db uses a live/ price override instead of the committed providers/ table" {
+  a="$BATS_TEST_TMPDIR/assetsL"; fixture_assets "$a"
+  mkdir -p "$a/live/hetzner"
+  cat > "$a/live/hetzner/prices.csv" <<CSV
+type,price_group,currency,effective_from,price_hourly,price_monthly
+cx33,eu,eur,2025-10-01,0.0080,4.99
+cax21,eu,eur,2025-10-01,0.0070,3.50
+CSV
+  cp "$a/providers/hetzner/server_types.csv" "$a/live/hetzner/server_types.csv"
+  d="$BATS_TEST_TMPDIR/invL"; mkdir -p "$d"; cx33_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/fL.db"
+  run build_db "$db" "$a" "$d"
+  [ "$status" -eq 0 ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced;")" = "3.50" ]
+}
+
 @test "gelkao <cn> runs the whole pipeline: extract, fetch (skip), audit" {
   d="$BATS_TEST_TMPDIR/g"; mkdir -p "$d"
   uuid=11111111-2222-3333-4444-555555555555
@@ -123,6 +139,14 @@ HTML
   [ "$status" -eq 0 ]
   [[ "$output" == *"skip"* ]]                     # fetch skipped the pre-seeded invoice (no curl)
   [[ "$output" == *"would save"* ]]               # audit ran end-to-end
+}
+
+@test "gelkao -q audit is accepted and produces an audit" {
+  d="$BATS_TEST_TMPDIR/q"; mkdir -p "$d"
+  invoice_csv "$d/K0000000000-2025-11-x.csv"
+  run bash -c "DATA_DIR='$d' '$ROOT/gelkao' -q audit"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"would save"* ]]
 }
 
 @test "require_sqlite rejects sqlite older than 3.32" {
@@ -152,4 +176,62 @@ HTML
   PATH="$BATS_TEST_TMPDIR" run require_curl
   [ "$status" -ne 0 ]
   [[ "$output" == *"install curl"* ]]
+}
+
+@test "resolve_asset prefers a live/ copy over the committed providers/ file, else falls back" {
+  repo="$BATS_TEST_TMPDIR/repo"; mkdir -p "$repo/providers/hetzner" "$repo/live/hetzner"
+  : > "$repo/providers/hetzner/prices.csv"
+  : > "$repo/providers/hetzner/server_types.csv"
+
+  run resolve_asset hetzner/server_types.csv "$repo"
+  [ "$status" -eq 0 ]
+  [ "$output" = "$repo/providers/hetzner/server_types.csv" ]
+
+  : > "$repo/live/hetzner/prices.csv"
+  run resolve_asset hetzner/prices.csv "$repo"
+  [ "$status" -eq 0 ]
+  [ "$output" = "$repo/live/hetzner/prices.csv" ]
+}
+
+@test "update_prices fails and leaves no override when the server has no file" {
+  repo="$BATS_TEST_TMPDIR/repoF"; mkdir -p "$repo/providers/hetzner"
+  : > "$repo/providers/hetzner/prices.csv"; : > "$repo/providers/hetzner/server_types.csv"
+
+  curl() { return 22; }
+
+  run update_prices https://gelkao.com "$repo/live"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"failed to fetch"* ]]
+  [ ! -f "$repo/live/hetzner/prices.csv" ]
+
+  run resolve_asset hetzner/prices.csv "$repo"
+  [ "$output" = "$repo/providers/hetzner/prices.csv" ]
+}
+
+@test "update_prices downloads both tables into live/hetzner and resolve_asset then prefers them" {
+  repo="$BATS_TEST_TMPDIR/repoS"; mkdir -p "$repo/providers/hetzner"
+  : > "$repo/providers/hetzner/prices.csv"; : > "$repo/providers/hetzner/server_types.csv"
+
+  curl() {
+    local f=""
+    while [ $# -gt 0 ]; do [ "$1" = "-o" ] && { f="$2"; shift; }; shift; done
+    printf 'fresh\n' > "$f"
+    return 0
+  }
+
+  run update_prices https://gelkao.com "$repo/live"
+  [ "$status" -eq 0 ]
+  [ -s "$repo/live/hetzner/prices.csv" ]
+  [ -s "$repo/live/hetzner/server_types.csv" ]
+
+  run resolve_asset hetzner/prices.csv "$repo"
+  [ "$output" = "$repo/live/hetzner/prices.csv" ]
+}
+
+@test "maybe_refresh_prices is a no-op (no prompt, no fetch) when not interactive" {
+  update_prices() { touch "$BATS_TEST_TMPDIR/fetched"; }
+
+  run maybe_refresh_prices https://gelkao.com "$BATS_TEST_TMPDIR/live"
+  [ "$status" -eq 0 ]
+  [ ! -e "$BATS_TEST_TMPDIR/fetched" ]
 }

@@ -27,7 +27,7 @@ Power users: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./
 
 - **bash** 3.2+ — the macOS system bash works.
 - **sqlite3** 3.32+ — the audit engine; older versions cannot run the `.import --skip 1` it relies on.
-- **curl** — only to download invoices (`fetch`); the audit itself needs no network.
+- **curl** — to download invoices (`fetch`) and, if you accept the optional price refresh, the price tables; decline the prompt or pass `-q` and the audit stays fully offline.
 - standard POSIX tools (`grep`, `sed`, `head`), present on any Unix.
 - **Windows:** run it inside WSL (Windows Subsystem for Linux); it then behaves exactly like the Linux setup above.
 
@@ -35,7 +35,10 @@ Power users: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./
 
 `gelkao` runs entirely on your machine - it's a local command-line tool, not a SaaS dashboard. No account, no login, nothing uploaded.
 
-- **Pull-only:** it only ever downloads your invoices from Hetzner; it never sends them anywhere.
+- **Download-only:** every request it makes is a plain HTTP GET — it downloads your invoices from
+Hetzner and, if you let it, the public Hetzner price tables from `gelkao.com`, and uploads nothing.
+That price refresh is an interactive prompt (`[Y/n]`); decline with `n`, or skip it entirely with
+`-q` or any non-interactive run (a pipe, CI).
 - **Billing data stays in `data/`**, which is gitignored — keep it out of version control, tickets,
 and shared locations.
 - **No gelkao account or password:** an invoice is fetched with two secrets you already hold — its
@@ -70,17 +73,27 @@ audit to stdout.
 The first argument is a subcommand (`list`, `fetch`, `audit`); anything else
 is treated as a customer number and runs the whole flow.
 
+Before auditing, an interactive run offers to refresh the price tables from
+`gelkao.com` (`[Y/n]`); accepting downloads the latest public price/spec CSVs
+into `live/`, which then override the committed snapshot. Decline with `n`, or
+use `-q` (or any non-interactive run) to skip the prompt and price against the
+tables already on disk.
+
 **OPTIONS**
 
 - `-g "<project>"` — audit only one Hetzner project (the invoice `grouping`
   column, e.g. `"Project prod"`). Valid for the full run and `audit` only; on
   `list` or `fetch` it is an error.
+- `-q` — skip the interactive price-refresh prompt and audit against the prices
+  already on disk. Implied when output is not a terminal (a pipe, CI).
 
 **ENVIRONMENT**
 
 - `HETZNER_CN` — customer number; fallback for `<customer-number>`.
 - `DATA_DIR` — CSV directory (default `data`).
 - `DB` — database path (default `data/gelkao.db`).
+- `GELKAO_PRICES_URL` — base URL for the price refresh (default `https://gelkao.com/live`).
+- `LIVE_DIR` — where refreshed price tables are stored (default `live`).
 
 **COMMANDS**
 

@@ -104,16 +104,48 @@ import_invoices() {
   [ "$found" = 1 ] || die "no invoice CSVs in $data_dir/"
 }
 
+resolve_asset() {
+  local rel=$1 repo=$2 live
+  live="${LIVE_DIR:-$repo/live}"
+  if [ -f "$live/$rel" ]; then printf '%s' "$live/$rel"; else printf '%s' "$repo/providers/$rel"; fi
+}
+
+update_prices() {
+  local base=$1 live=$2 rel rc=0
+  for rel in hetzner/prices.csv hetzner/server_types.csv; do
+    mkdir -p "$(dirname "$live/$rel")"
+    if curl -sSfL -o "$live/$rel" "$base/$rel"; then
+      echo "updated $live/$rel" >&2
+    else
+      rm -f "$live/$rel"
+      echo "failed to fetch $base/$rel" >&2
+      rc=1
+    fi
+  done
+  return $rc
+}
+
+maybe_refresh_prices() {
+  local base=$1 live=$2 quiet=${3:-0} ans
+  if [ "$quiet" = 1 ] || [ ! -t 1 ]; then return 0; fi
+  printf 'Hetzner changes its prices every few months — fetch the latest from %s? [Y/n] ' "$base" > /dev/tty
+  read -r ans < /dev/tty || return 0
+  case "$ans" in [Nn]*) return 0 ;; esac
+  update_prices "$base" "$live" || echo "price refresh failed; keeping committed prices" >&2
+}
+
 build_db() {
-  local db=$1 assets=$2 data_dir=$3 tables="$2/providers/hetzner"
+  local db=$1 assets=$2 data_dir=$3 prices spec
   require_sqlite
-  [ -f "$tables/prices.csv" ]       || die "missing prices.csv in $tables"
-  [ -f "$tables/server_types.csv" ] || die "missing server_types.csv in $tables"
+  prices=$(resolve_asset hetzner/prices.csv "$assets")
+  spec=$(resolve_asset hetzner/server_types.csv "$assets")
+  [ -f "$prices" ] || die "missing prices.csv (resolved to $prices)"
+  [ -f "$spec" ]   || die "missing server_types.csv (resolved to $spec)"
   rm -f "$db"
   sqlite3 "$db" < "$assets/schema.sql"
   import_invoices "$db" "$data_dir"
-  sqlite3 "$db" ".mode csv" ".import --skip 1 '$tables/prices.csv' prices"
-  sqlite3 "$db" ".mode csv" ".import --skip 1 '$tables/server_types.csv' server_types"
+  sqlite3 "$db" ".mode csv" ".import --skip 1 '$prices' prices"
+  sqlite3 "$db" ".mode csv" ".import --skip 1 '$spec' server_types"
   sqlite3 "$db" < "$assets/audit.sql"
 }
 
@@ -177,15 +209,16 @@ SQL
 }
 
 audit() {
-  local assets=$1 data_dir=$2 db="${3:-$2/gelkao.db}" grouping=${4:-}
+  local assets=$1 data_dir=$2 db="${3:-$2/gelkao.db}" grouping=${4:-} quiet=${5:-0}
+  maybe_refresh_prices "${GELKAO_PRICES_URL:-https://gelkao.com/live}" "${LIVE_DIR:-$assets/live}" "$quiet"
   build_db "$db" "$assets" "$data_dir"
   report "$db" "$grouping"
 }
 
 run_pipeline() {
-  local assets=$1 cn=$2 data_dir=${3:-data} db=${4:-} grouping=${5:-} uuids
+  local assets=$1 cn=$2 data_dir=${3:-data} db=${4:-} grouping=${5:-} quiet=${6:-0} uuids
   uuids=$(extract_uuids || true)
   [[ -n "$uuids" ]] || die "no invoice UUIDs found on stdin"
   printf '%s\n' "$uuids" | fetch_all "$cn" "$data_dir" >&2
-  audit "$assets" "$data_dir" "$db" "$grouping"
+  audit "$assets" "$data_dir" "$db" "$grouping" "$quiet"
 }

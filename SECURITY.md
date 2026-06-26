@@ -21,17 +21,21 @@ Until the first tagged release (`v0.1.0`), only the latest `master` is supported
 
 ## What the tool does with your data
 
-`gelkao` runs entirely on your machine and only ever **pulls** — it never uploads your invoices anywhere. The full data model is in the README under **"Your data stays on your disk."**
+`gelkao` runs entirely on your machine, and every request it makes is a plain HTTP **GET** — it only ever *downloads*. It never sends a request body, so nothing of yours is uploaded anywhere. The full data model is in the README under **"Your data stays on your disk."**
 
 These properties are verifiable from the source — you do not have to take our word for it:
 
-- **One network destination.** The only outbound request is a `curl` to `https://usage.hetzner.com/...`, which downloads *your own* invoices. Verify:
+- **Two outbound destinations, both GETs.** `gelkao` issues `curl` requests to exactly two hosts:
+  1. `https://usage.hetzner.com/...` — downloads *your own* invoices.
+  2. `https://gelkao.com/...` — downloads the current Hetzner **price tables** (public `prices.csv`, `server_types.csv`). This is the **optional price refresh**: an interactive `gelkao audit` asks `[Y/n]` first, you can decline with `n`, and `-q` (or any non-interactive run — a pipe, CI) skips it.
+
+  Verify both — and that each only reads:
   ```
-  grep -n curl lib.sh          # one call, line 47
+  grep -nE 'curl -' lib.sh
   grep -noE 'https?://[^ )"]+' lib.sh gelkao | sort -u
   ```
-  The `https://gelkao.com` string is a printed banner (stderr), not a request.
-- **No telemetry, no analytics, no third-party endpoints.**
+  Both `curl` calls use only `-sSfL -o` — no `--data`, `--upload-file`, or `-X POST` — so they can only GET.
+- **The only telemetry is the price-pull request itself.** If you accept the refresh, `gelkao.com` sees a download request — a count of refreshes, nothing more: no invoice data, no analytics, no identifiers. Decline the prompt or pass `-q` and no request is made at all.
 - **Billing data stays in `data/`**, which is gitignored.
 
 ## Dependencies (supply-chain surface)

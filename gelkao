@@ -15,6 +15,7 @@ Usage:
 
   -g "<project>"   audit only one Hetzner project (the invoice "grouping" column);
                    valid for the full run and audit only
+  -q               skip the price-refresh prompt (non-interactive)
   HETZNER_CN       customer number (fallback for <customer-number>)
   DATA_DIR         CSV directory (default: data)
   DB               database path (default: <data_dir>/gelkao.db)
@@ -36,24 +37,25 @@ cmd_fetch() {
 }
 
 cmd_audit() {
-  local grouping=$1; shift
-  audit "$here" "${1:-${DATA_DIR:-data}}" "${DB:-}" "$grouping"
+  local grouping=$1 quiet=$2; shift 2
+  audit "$here" "${1:-${DATA_DIR:-data}}" "${DB:-}" "$grouping" "$quiet"
 }
 
 cmd_run() {
-  local grouping=$1; shift
+  local grouping=$1 quiet=$2; shift 2
   local cn="${1:-${HETZNER_CN:-}}"
   [[ -n "$cn" ]] || die "customer number required (arg or HETZNER_CN env)"
   banner
-  run_pipeline "$here" "$cn" "${DATA_DIR:-data}" "${DB:-}" "$grouping"
+  run_pipeline "$here" "$cn" "${DATA_DIR:-data}" "${DB:-}" "$grouping" "$quiet"
 }
 
 main() {
-  local OPTIND grouping=""
+  local OPTIND grouping="" quiet=0
   [[ "${1-}" = "--help" ]] && { usage; exit 0; }
-  while getopts ":g:h" opt; do
+  while getopts ":g:hq" opt; do
     case "$opt" in
       g) grouping=$OPTARG ;;
+      q) quiet=1 ;;
       h) usage; exit 0 ;;
       :) die "option -$OPTARG requires a value" ;;
       \?) die "unknown option: -$OPTARG" ;;
@@ -64,8 +66,8 @@ main() {
     '')    usage; exit 2 ;;
     list)  shift; [[ -z "$grouping" ]] || die "-g is not valid for list";  cmd_list  "$@" ;;
     fetch) shift; [[ -z "$grouping" ]] || die "-g is not valid for fetch"; cmd_fetch "$@" ;;
-    audit) shift; cmd_audit "$grouping" "$@" ;;
-    *)            cmd_run   "$grouping" "$@" ;;
+    audit) shift; cmd_audit "$grouping" "$quiet" "$@" ;;
+    *)            cmd_run   "$grouping" "$quiet" "$@" ;;
   esac
 }
 
