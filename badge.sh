@@ -33,6 +33,8 @@ push_badge() {
 
 main() {
   set -uo pipefail
+
+  : "${INVOICE_HTML:?set INVOICE_HTML to a saved invoice page}"
   cd "$(dirname "${BASH_SOURCE[0]}")" || return 1
 
   echo "==> running integration suite (real downloads — may take a while)" >&2
