@@ -85,6 +85,13 @@ need_data() {  # audit needs only local CSVs — no network, no credentials
   [[ "$output" =~ would\ save\ :\ [0-9]+\.[0-9]+% ]]
 }
 
+@test "audit runs the committed synthetic examples with no credentials or network" {
+  DB="$BATS_TEST_TMPDIR/example.db" run "$ROOT/gelkao" -q audit "$ROOT/examples"
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ price\ group\ +:\ eu ]]
+  [[ "$output" =~ would\ save\ :\ 3[0-9]\.[0-9]+% ]]
+}
+
 @test "gelkao <cn> end-to-end downloads then reports a positive line count" {
   need_creds
   run bash -c "cat '$INVOICE_HTML' | '$ROOT/gelkao' '$HETZNER_CN'"

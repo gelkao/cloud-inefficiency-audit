@@ -5,7 +5,13 @@
 
 ## Quick start
 
-Replace `K0000000000` with your own Hetzner customer number.
+Try it first with no account - the repo ships a small synthetic fleet you can audit on a fresh clone:
+
+```
+./gelkao -q audit examples
+```
+
+Then run it on your own bill. Replace `K0000000000` with your own Hetzner customer number.
 
 - Go to: https://accounts.hetzner.com/invoice
 - Save the page as HTML into the `data/` directory ![Save page as HTML](img/hetzner-invoice.png)

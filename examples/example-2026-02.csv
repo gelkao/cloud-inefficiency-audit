@@ -1,0 +1,7 @@
+grouping,product,description,reference,quantity,from,until,condition,unit,external id,price,total
+"Project web","CAX11 Cloud Server","worker-1","Server 90000031","1.0000",2026-02-01,2026-02-28,,"Months","Server 90000031",,"€ 3.2900"
+"Project web","CX33 Cloud Server","web-1","Server 90000011","1.0000",2026-02-01,2026-02-28,,"Months","Server 90000011",,"€ 4.9900"
+"Project data","CX33 Cloud Server","cache-1","Server 90000022","1.0000",2026-02-01,2026-02-28,,"Months","Server 90000022",,"€ 4.9900"
+"Project web","CAX31 Cloud Server","api-1","Server 90000012","1.0000",2026-02-01,2026-02-28,,"Months","Server 90000012",,"€ 11.9900"
+"Project data","CX43 Cloud Server","db-1","Server 90000021","1.0000",2026-02-01,2026-02-28,,"Months","Server 90000021",,"€ 8.9900"
+"Project data","CAX41 Cloud Server","analytics-1","Server 90000023","1.0000",2026-02-01,2026-02-28,,"Months","Server 90000023",,"€ 23.9900"
