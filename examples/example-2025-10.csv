@@ -1,0 +1,7 @@
+grouping,product,description,reference,quantity,from,until,condition,unit,external id,price,total
+"Project web","CPX22 Cloud Server","worker-1","Server 90000031","1.0000",2025-10-01,2025-10-31,,"Months","Server 90000031",,"€ 5.9900"
+"Project web","CPX32 Cloud Server","web-1","Server 90000011","1.0000",2025-10-01,2025-10-31,,"Months","Server 90000011",,"€ 10.4900"
+"Project data","CCX13 Cloud Server","cache-1","Server 90000022","1.0000",2025-10-01,2025-10-31,,"Months","Server 90000022",,"€ 11.9900"
+"Project web","CPX42 Cloud Server","api-1","Server 90000012","1.0000",2025-10-01,2025-10-31,,"Months","Server 90000012",,"€ 19.4900"
+"Project data","CCX23 Cloud Server","db-1","Server 90000021","1.0000",2025-10-01,2025-10-31,,"Months","Server 90000021",,"€ 23.9900"
+"Project data","CPX62 Cloud Server","analytics-1","Server 90000023","1.0000",2025-10-01,2025-10-31,,"Months","Server 90000023",,"€ 38.4900"
