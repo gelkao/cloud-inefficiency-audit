@@ -24,7 +24,7 @@ Then run it on your own bill. Replace `K0000000000` with your own Hetzner custom
 
 ![Cloud Inefficiency Audit sample output](img/audit-demo.svg)
 
-*Legend*
+*Legend* (saving = vs. the cheapest same-spec Hetzner type - type choice, not right-sizing)
 
 - 🟥 *saving ≥ 50%*
 - 🟧 *saving 20-49%*
