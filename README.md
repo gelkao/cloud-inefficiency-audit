@@ -27,6 +27,10 @@ Then run it on your own bill. Replace `K0000000000` with your own Hetzner custom
 
 Power users: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./gelkao audit`
 
+## Share your number
+
+Ran an audit? Post your result in [Discussions](https://github.com/gelkao/cloud-inefficiency-audit/discussions/11) - no email, nothing uploaded, just what you choose to paste.
+
 ## Requirements
 
 `gelkao` is a small shell tool with a few standard dependencies:
