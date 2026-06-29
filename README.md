@@ -1,5 +1,10 @@
 # Cloud Inefficiency Audit
 
+**Because the world doesn't need another cloud dashboard.**
+
+So this isn't one. No account, no login, nothing uploaded - it reads invoices you
+already have, prints what you overpaid, and exits. Grep the source to prove it.
+
 [![CI](https://github.com/gelkao/cloud-inefficiency-audit/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/gelkao/cloud-inefficiency-audit/actions/workflows/ci.yml)
 [![integration](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/dominikzalewski/696b0e161d53e5b752b2c6bc7c0fbf74/raw/cloud-inefficiency-audit-integration.json)](https://gist.github.com/dominikzalewski/696b0e161d53e5b752b2c6bc7c0fbf74)
 
