@@ -1,3 +1,5 @@
+🇬🇧 English | 🇩🇪 [Deutsch](README.md)
+
 # Cloud Inefficiency Audit
 
 **Because the world doesn't need another cloud dashboard.**
