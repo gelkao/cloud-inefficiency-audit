@@ -15,9 +15,9 @@ We aim to acknowledge a report within a few business days and will keep you upda
 
 | Version | Supported |
 |---|---|
-| latest `master` | ✅ |
+| 1.0.x | ✅ |
 
-Until the first tagged release (`v0.1.0`), only the latest `master` is supported. This table becomes a versioned list once releases are tagged.
+Only the latest `1.0.x` release is supported. Security fixes land on `master` and ship in the next tagged release.
 
 ## What the tool does with your data
 
