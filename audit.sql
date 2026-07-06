@@ -37,8 +37,8 @@ FROM line_items
 WHERE qty > 0
 GROUP BY type, month, kind;
 
-DROP VIEW IF EXISTS priced;
-CREATE VIEW priced AS
+DROP TABLE IF EXISTS priced;
+CREATE TABLE priced AS
 SELECT
   li.box, li.date, li.month, li.grouping, li.type, li.kind, li.qty, li.currency,
   li.paid,
