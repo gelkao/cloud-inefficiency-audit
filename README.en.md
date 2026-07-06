@@ -33,6 +33,12 @@ Then run it on your own bill. Replace `K0000000000` with your own Hetzner custom
 
 Power users: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./gelkao audit`
 
+## Real-world example
+
+[You're probably on the wrong Cloud box](https://gelkao.com/blog/how-cost-efficient-is-mytimeplan-com-cloud/)
+is a case study of [mytimeplan.com](https://mytimeplan.com)'s real Hetzner fleet.
+Exact numbers: 14 months, 193 boxes, €1,878/mo, **23% overpaid.**
+
 ## Share your number
 
 Ran an audit? Post your result in [Discussions](https://github.com/gelkao/cloud-inefficiency-audit/discussions/11) - no email, nothing uploaded, just what you choose to paste.

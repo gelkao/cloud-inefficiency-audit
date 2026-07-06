@@ -35,6 +35,12 @@ Dann lass es auf deine eigene Rechnung los. Ersetze `K0000000000` durch deine ei
 
 Für Power-User: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./gelkao audit`
 
+## Beispiel aus der Praxis
+
+[Du bist wahrscheinlich auf der falschen Cloud-Box](https://gelkao.com/blog/how-cost-efficient-is-mytimeplan-com-cloud/) (englisch)
+ist eine Fallstudie über die echte Hetzner-Flotte von [mytimeplan.com](https://mytimeplan.com).
+Exakte Zahlen: 14 Monate, 193 Server, 1.878 €/Monat, **23 % zu viel gezahlt.**
+
 ## Teile dein Ergebnis
 
 Audit durchgelaufen? Poste dein Ergebnis in den [Discussions](https://github.com/gelkao/cloud-inefficiency-audit/discussions/11) – keine E-Mail, nichts wird hochgeladen, nur das, was du selbst einfügst.
