@@ -21,10 +21,13 @@ Try it first with no account - the repo ships a small synthetic fleet you can au
 Then run it on your own bill. Replace `K0000000000` with your own Hetzner customer number.
 
 - Go to: https://accounts.hetzner.com/invoice
-- Save the page as HTML into the `data/` directory ![Save page as HTML](img/hetzner-invoice.en.png)
+- Save the page as HTML into the `data/` directory
+
+<p align="center"><img src="img/hetzner-invoice.en.png" alt="Save page as HTML"></p>
+
 - Run `cat data/*.html | ./gelkao K0000000000`
 
-![Cloud Inefficiency Audit sample output](img/audit-demo.svg)
+<p align="center"><img src="img/audit-demo.svg" alt="Cloud Inefficiency Audit sample output"></p>
 
 *Legend* (saving = vs. the cheapest same-spec Hetzner type - type choice, not right-sizing)
 

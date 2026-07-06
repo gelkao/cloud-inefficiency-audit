@@ -23,10 +23,13 @@ Server-Flotte mit, die du direkt nach dem Klonen auditieren kannst:
 Dann lass es auf deine eigene Rechnung los. Ersetze `K0000000000` durch deine eigene Hetzner-Kundennummer.
 
 - Öffne: https://accounts.hetzner.com/invoice
-- Speichere die Seite als HTML im Verzeichnis `data/` ![Seite als HTML speichern](img/hetzner-invoice.de.png)
+- Speichere die Seite als HTML im Verzeichnis `data/`
+
+<p align="center"><img src="img/hetzner-invoice.de.png" alt="Seite als HTML speichern"></p>
+
 - Führe `cat data/*.html | ./gelkao K0000000000` aus
 
-![Beispielausgabe der Cloud Inefficiency Audit](img/audit-demo.svg)
+<p align="center"><img src="img/audit-demo.svg" alt="Beispielausgabe der Cloud Inefficiency Audit"></p>
 
 *Legende* (Ersparnis = gegenüber dem günstigsten Hetzner-Typ mit gleicher Spec – Typwahl, nicht Right-Sizing)
 
