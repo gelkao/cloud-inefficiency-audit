@@ -31,11 +31,7 @@ Dann lass es auf deine eigene Rechnung los. Ersetze `K0000000000` durch deine ei
 
 <p align="center"><img src="img/audit-demo.svg" alt="Beispielausgabe der Cloud Inefficiency Audit"></p>
 
-*Legende* (Ersparnis = gegenüber dem günstigsten Hetzner-Typ mit gleicher Spec – Typwahl, nicht Right-Sizing)
-
-- 🟥 *Ersparnis ≥ 50 %*
-- 🟧 *Ersparnis 20–49 %*
-- 🟩 *Ersparnis unter 20 %*
+<p align="center">🟥 ≥ 50 % · 🟧 20–49 % · 🟩 unter 20 %</p>
 
 Für Power-User: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./gelkao audit`
 

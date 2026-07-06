@@ -29,11 +29,7 @@ Then run it on your own bill. Replace `K0000000000` with your own Hetzner custom
 
 <p align="center"><img src="img/audit-demo.svg" alt="Cloud Inefficiency Audit sample output"></p>
 
-*Legend* (saving = vs. the cheapest same-spec Hetzner type - type choice, not right-sizing)
-
-- 🟥 *saving ≥ 50%*
-- 🟧 *saving 20-49%*
-- 🟩 *saving under 20%*
+<p align="center">🟥 ≥ 50% · 🟧 20–49% · 🟩 under 20%</p>
 
 Power users: `cat data/*.html | ./gelkao list | ./gelkao fetch K0000000000 && ./gelkao audit`
 
