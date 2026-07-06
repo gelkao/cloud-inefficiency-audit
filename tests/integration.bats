@@ -89,6 +89,8 @@ need_data() {  # audit needs only local CSVs — no network, no credentials
   [ "$status" -eq 0 ]
   [[ "$output" =~ price\ group\ +:\ eu ]]
   [[ "$output" =~ would\ save\ :\ 3[0-9]\.[0-9]+% ]]
+  [ -f "$BATS_TEST_TMPDIR/example.db" ]
+  [ ! -f "$ROOT/examples/gelkao.db" ]
 }
 
 @test "gelkao <cn> end-to-end downloads then reports a positive line count" {

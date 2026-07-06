@@ -100,6 +100,16 @@ HTML
   [[ "$output" == *"not valid for list"* ]]
 }
 
+@test "gelkao -f is rejected for list and fetch" {
+  run "$ROOT/gelkao" -f /tmp/x.db list
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"not valid for list"* ]]
+
+  run "$ROOT/gelkao" -f /tmp/x.db fetch K0000000000
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"not valid for fetch"* ]]
+}
+
 @test "build_db fails when the data dir has no CSVs" {
   d="$BATS_TEST_TMPDIR/empty"; mkdir -p "$d"
   run build_db "$BATS_TEST_TMPDIR/e.db" "$ROOT" "$d"
