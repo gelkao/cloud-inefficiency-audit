@@ -17,7 +17,7 @@ Probier es erst ohne Account aus – das Repo bringt eine kleine synthetische
 Server-Flotte mit, die du direkt nach dem Klonen auditieren kannst:
 
 ```
-./gelkao -q audit examples
+./gelkao -q -d examples audit
 ```
 
 Dann lass es auf deine eigene Rechnung los. Ersetze `K0000000000` durch deine eigene Hetzner-Kundennummer.
@@ -80,10 +80,10 @@ gelkao – Hetzner-Rechnungen als CSV herunterladen und auditieren
 **ÜBERSICHT**
 
 ```
-cat data/*.html | ./gelkao [-g "<projekt>"] <kundennummer>
+cat data/*.html | ./gelkao [-g "<projekt>"] [-d <verzeichnis>] [-f <pfad>] <kundennummer>
 cat data/*.html | ./gelkao list
-echo 00000000-0000-0000-0000-000000000000 | ./gelkao fetch <kundennummer>
-./gelkao [-g "<projekt>"] audit [data_dir]
+echo 00000000-0000-0000-0000-000000000000 | ./gelkao [-d <verzeichnis>] fetch <kundennummer>
+./gelkao [-g "<projekt>"] [-d <verzeichnis>] [-f <pfad>] audit
 ```
 
 **BESCHREIBUNG**
@@ -111,6 +111,10 @@ vorhandenen Tabellen gerechnet.
 - `-g "<projekt>"` – auditiert nur ein Hetzner-Projekt (die Spalte `grouping` der
   Rechnung, z. B. `"Project prod"`). Nur beim vollständigen Lauf und bei `audit`
   gültig; bei `list` oder `fetch` ein Fehler.
+- `-d <verzeichnis>` – Rechnungs-CSV-Verzeichnis (Vorgabe `data`). Gültig beim
+  vollständigen Lauf, bei `fetch` und `audit`; bei `list` ein Fehler.
+- `-f <pfad>` – SQLite-Datenbankdatei (Vorgabe `<verzeichnis>/gelkao.db`). Gültig
+  beim vollständigen Lauf und bei `audit`; bei `list` oder `fetch` ein Fehler.
 - `-q` – überspringt die interaktive Abfrage zur Preisaktualisierung und
   auditiert gegen die bereits vorhandenen Preise. Wird impliziert, wenn die
   Ausgabe kein Terminal ist (Pipe, CI).
@@ -118,8 +122,6 @@ vorhandenen Tabellen gerechnet.
 **UMGEBUNGSVARIABLEN**
 
 - `HETZNER_CN` – Kundennummer; Ausweichwert für `<kundennummer>`.
-- `DATA_DIR` – CSV-Verzeichnis (Vorgabe `data`).
-- `DB` – Datenbankpfad (Vorgabe `data/gelkao.db`).
 - `GELKAO_PRICES_URL` – Basis-URL für die Preisaktualisierung (Vorgabe `https://gelkao.com/live`).
 - `LIVE_DIR` – Speicherort der aktualisierten Preistabellen (Vorgabe `live`).
 
@@ -180,8 +182,8 @@ der Suche als Platzhalter behandelt) – erneute Läufe und Wiederholungen
 verursachen somit keinen Netzwerk-Request für bereits erledigte Arbeit.
 
 `<kundennummer>` ist erforderlich (z. B. `K0000000000`) und kann alternativ über
-`HETZNER_CN` bereitgestellt werden. `DATA_DIR` legt das Ausgabeverzeichnis fest
-(Vorgabe `data`).
+`HETZNER_CN` bereitgestellt werden. `-d <verzeichnis>` legt das Ausgabeverzeichnis
+fest (Vorgabe `data`).
 
 **AUSGABE** – `ok`-/`skip`-Fortschrittszeilen auf der Standardausgabe,
 `fail`-Zeilen auf der Standardfehlerausgabe und abschließend eine Zusammenfassung
@@ -223,7 +225,7 @@ echo 00000000-0000-0000-0000-000000000000 | ./gelkao fetch K0000000000
 echo 00000000-0000-0000-0000-000000000000 | HETZNER_CN=K0000000000 ./gelkao fetch
 ```
 
-### gelkao audit [data_dir]
+### gelkao audit
 
 Baut eine wegwerfbare SQLite-Datenbank aus den Rechnungs-CSVs auf und gibt den
 Audit-Report aus. Die Tabellen werden aus `schema.sql` erstellt, jede `*.csv` im
@@ -238,15 +240,15 @@ Umleitung ist die Ausgabe schmucklos. Die Datenbank liegt unter `data/gelkao.db`
 und ist ein wegwerfbarer Cache, der bei jedem Lauf aus den CSVs neu aufgebaut wird
 – ein Löschen ist unbedenklich.
 
-`arg 1` / `DATA_DIR` legt den Ordner mit den Rechnungs-CSVs fest (Vorgabe
-`data`); `DB` legt den Datenbankpfad fest (Vorgabe `data/gelkao.db`).
+`-d <verzeichnis>` legt den Ordner mit den Rechnungs-CSVs fest (Vorgabe
+`data`); `-f <pfad>` legt den Datenbankpfad fest (Vorgabe `<verzeichnis>/gelkao.db`).
 Exit-Status: `0` abgeschlossen · `1` keine Rechnungs-CSVs im Datenverzeichnis
 gefunden.
 
 ```
 ./gelkao audit
 ./gelkao -g "Project prod" audit
-DATA_DIR=pages DB=/tmp/x.db ./gelkao audit
+./gelkao -d pages -f /tmp/x.db audit
 ```
 
 ## Tests

@@ -15,7 +15,7 @@ already have, prints what you overpaid, and exits. Grep the source to prove it.
 Try it first with no account - the repo ships a small synthetic fleet you can audit on a fresh clone:
 
 ```
-./gelkao -q audit examples
+./gelkao -q -d examples audit
 ```
 
 Then run it on your own bill. Replace `K0000000000` with your own Hetzner customer number.
@@ -78,10 +78,10 @@ gelkao — download Hetzner invoices as CSV and audit them
 **SYNOPSIS**
 
 ```
-cat data/*.html | ./gelkao [-g "<project>"] <customer-number>
+cat data/*.html | ./gelkao [-g "<project>"] [-d <dir>] [-f <path>] <customer-number>
 cat data/*.html | ./gelkao list
-echo 00000000-0000-0000-0000-000000000000 | ./gelkao fetch <customer-number>
-./gelkao [-g "<project>"] audit [data_dir]
+echo 00000000-0000-0000-0000-000000000000 | ./gelkao [-d <dir>] fetch <customer-number>
+./gelkao [-g "<project>"] [-d <dir>] [-f <path>] audit
 ```
 
 **DESCRIPTION**
@@ -106,14 +106,16 @@ tables already on disk.
 - `-g "<project>"` — audit only one Hetzner project (the invoice `grouping`
   column, e.g. `"Project prod"`). Valid for the full run and `audit` only; on
   `list` or `fetch` it is an error.
+- `-d <dir>` — invoice CSV directory (default `data`). Valid for the full run,
+  `fetch`, and `audit`; on `list` it is an error.
+- `-f <path>` — SQLite database file (default `<dir>/gelkao.db`). Valid for the
+  full run and `audit`; on `list` or `fetch` it is an error.
 - `-q` — skip the interactive price-refresh prompt and audit against the prices
   already on disk. Implied when output is not a terminal (a pipe, CI).
 
 **ENVIRONMENT**
 
 - `HETZNER_CN` — customer number; fallback for `<customer-number>`.
-- `DATA_DIR` — CSV directory (default `data`).
-- `DB` — database path (default `data/gelkao.db`).
 - `GELKAO_PRICES_URL` — base URL for the price refresh (default `https://gelkao.com/live`).
 - `LIVE_DIR` — where refreshed price tables are stored (default `live`).
 
@@ -169,7 +171,7 @@ the filename, an invoice that is already present is detected and skipped
 retries cost no network request for work already done.
 
 `<customer-number>` is required (e.g. `K0000000000`); it may instead be supplied
-via `HETZNER_CN`. `DATA_DIR` sets the output directory (default `data`).
+via `HETZNER_CN`. `-d <dir>` sets the output directory (default `data`).
 
 **OUTPUT** — `ok` / `skip` progress lines on stdout, `fail` lines on stderr, and
 a final `Done. downloaded=N skipped=N failed=N` summary on stderr. CSV files
@@ -206,7 +208,7 @@ echo 00000000-0000-0000-0000-000000000000 | ./gelkao fetch K0000000000
 echo 00000000-0000-0000-0000-000000000000 | HETZNER_CN=K0000000000 ./gelkao fetch
 ```
 
-### gelkao audit [data_dir]
+### gelkao audit
 
 Builds a throwaway SQLite database from the invoice CSVs and prints the audit
 report. It creates the tables from `schema.sql`, imports every `*.csv` in the
@@ -219,14 +221,14 @@ percentage are coloured by savings level (red `≥50%`, amber `20–49%`, green
 `data/gelkao.db` and is a disposable cache, rebuilt from the CSVs on every run —
 safe to delete.
 
-`arg 1` / `DATA_DIR` sets the invoice CSV folder (default `data`); `DB` sets the
-database path (default `data/gelkao.db`). Exit status: `0` completed · `1` no
+`-d <dir>` sets the invoice CSV folder (default `data`); `-f <path>` sets the
+database path (default `<dir>/gelkao.db`). Exit status: `0` completed · `1` no
 invoice CSVs found in the data directory.
 
 ```
 ./gelkao audit
 ./gelkao -g "Project prod" audit
-DATA_DIR=pages DB=/tmp/x.db ./gelkao audit
+./gelkao -d pages -f /tmp/x.db audit
 ```
 
 ## Tests
