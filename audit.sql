@@ -61,6 +61,23 @@ SELECT
       li.paid
     ),
     li.paid
-  ) AS optimal
+  ) AS optimal,
+  MIN(
+    COALESCE(
+      ( SELECT MIN(
+          ( SELECT CASE WHEN li.kind = 'hourly' THEN p.price_hourly ELSE p.price_monthly END
+             FROM prices p
+             WHERE p.type = cand.type AND p.currency = li.currency
+               AND p.price_group = (SELECT price_group FROM detected_group)
+               AND p.effective_from <= li.date
+             ORDER BY p.effective_from DESC LIMIT 1 )
+        )
+        FROM server_types cand
+        WHERE cand.ram_gb = st.ram_gb AND cand.vcpu >= st.vcpu
+      ) * li.qty,
+      li.paid
+    ),
+    li.paid
+  ) AS optimal_recoverable
 FROM line_items li
 JOIN server_types st ON st.type = li.type;

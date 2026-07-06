@@ -153,6 +153,34 @@ CSV
   [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced;")" = "3.50" ]
 }
 
+@test "the 15-Jun effective date gates the post-change alternative price (guards a mis-dated tier)" {
+  d="$BATS_TEST_TMPDIR/jd"; mkdir -p "$d"; jun2026_untouched_invoice "$d/i.csv"
+
+  a="$BATS_TEST_TMPDIR/jok"; jun2026_assets "$a" 2026-06-15
+  build_db "$BATS_TEST_TMPDIR/jok.db" "$a" "$d" >/dev/null
+  [ "$(sqlite3 "$BATS_TEST_TMPDIR/jok.db" "SELECT printf('%.2f|%.2f', paid, optimal) FROM priced;")" = "8.49|8.49" ]
+
+  b="$BATS_TEST_TMPDIR/jbad"; jun2026_assets "$b" 2026-07-02
+  build_db "$BATS_TEST_TMPDIR/jbad.db" "$b" "$d" >/dev/null
+  [ "$(sqlite3 "$BATS_TEST_TMPDIR/jbad.db" "SELECT printf('%.2f', optimal) FROM priced;")" = "6.49" ]
+}
+
+@test "recoverable prices a move at prevailing list, not another box's locked rate" {
+  a="$BATS_TEST_TMPDIR/fa"; jun2026_assets "$a" 2026-06-15
+  d="$BATS_TEST_TMPDIR/fd"; mkdir -p "$d"; jun2026_locked_pair_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/f.db"; build_db "$db" "$a" "$d" >/dev/null
+
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f|%.2f', optimal, optimal_recoverable) FROM priced WHERE box='b_cx32';")" = "6.49|8.49" ]
+}
+
+@test "a box acquired after the change shows a fully recoverable gap (nothing lost)" {
+  a="$BATS_TEST_TMPDIR/pa"; jun2026_assets "$a" 2026-06-15
+  d="$BATS_TEST_TMPDIR/pd"; mkdir -p "$d"; jun2026_post_hike_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/p.db"; build_db "$db" "$a" "$d" >/dev/null
+
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f|%.2f|%.2f', paid, optimal, optimal_recoverable) FROM priced WHERE box='b_cpx32';")" = "35.49|8.49|8.49" ]
+}
+
 @test "gelkao -d <dir> <cn> runs the whole pipeline into <dir>: extract, fetch (skip), audit" {
   d="$BATS_TEST_TMPDIR/g"; mkdir -p "$d"
   uuid=11111111-2222-3333-4444-555555555555
