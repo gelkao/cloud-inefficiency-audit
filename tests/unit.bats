@@ -85,6 +85,21 @@ HTML
   [[ "$output" == *"not valid for fetch"* ]]
 }
 
+@test "gelkao -d <dir> fetch looks in <dir> (skips a pre-seeded invoice, no network)" {
+  d="$BATS_TEST_TMPDIR/f"; mkdir -p "$d"
+  uuid=11111111-2222-3333-4444-555555555555
+  invoice_csv "$d/K0000000000-2025-11-$uuid.csv"
+  run bash -c "echo '$uuid' | '$ROOT/gelkao' -d '$d' fetch K0000000000"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"skip"* ]]
+}
+
+@test "gelkao -d is rejected for list" {
+  run "$ROOT/gelkao" -d /tmp list
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"not valid for list"* ]]
+}
+
 @test "build_db fails when the data dir has no CSVs" {
   d="$BATS_TEST_TMPDIR/empty"; mkdir -p "$d"
   run build_db "$BATS_TEST_TMPDIR/e.db" "$ROOT" "$d"
@@ -139,7 +154,7 @@ CSV
   [ "$status" -eq 0 ]
   [[ "$output" == *"skip"* ]]                     # fetch skipped the pre-seeded invoice in <dir> (no curl)
   [[ "$output" == *"would save"* ]]               # audit ran end-to-end
-  [ -f "$d/gelkao.db" ]                            # db landed inside -d <dir>, not the default data/
+  [ -f "$d/gelkao.db" ]
 }
 
 @test "gelkao -q audit is accepted and produces an audit" {
