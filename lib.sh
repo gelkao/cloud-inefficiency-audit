@@ -162,6 +162,10 @@ stat_total_paid()     { sqlite3 "$1" "SELECT printf('%.2f', SUM(paid)) FROM pric
 stat_run_rate()       { sqlite3 "$1" "SELECT printf('%.2f', SUM(CASE WHEN month = (SELECT MAX(month) FROM priced ${2:-}) THEN paid ELSE 0 END)) FROM priced ${2:-};"; }
 stat_savings_pct()    { sqlite3 "$1" "SELECT printf('%.1f', (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid)) FROM priced ${2:-};"; }
 stat_savings_amount() { sqlite3 "$1" "SELECT printf('%.0f', round(SUM(paid) - SUM(optimal))) FROM priced ${2:-};"; }
+stat_recoverable_pct()    { sqlite3 "$1" "SELECT printf('%.1f', (SUM(paid) - SUM(optimal_recoverable)) * 100.0 / SUM(paid)) FROM priced ${2:-};"; }
+stat_recoverable_amount() { sqlite3 "$1" "SELECT printf('%.0f', round(SUM(paid) - SUM(optimal_recoverable))) FROM priced ${2:-};"; }
+stat_lost_pct()       { sqlite3 "$1" "SELECT printf('%.1f', (SUM(optimal_recoverable) - SUM(optimal)) * 100.0 / SUM(paid)) FROM priced ${2:-};"; }
+stat_lost_amount()    { sqlite3 "$1" "SELECT printf('%.0f', round(SUM(optimal_recoverable) - SUM(optimal))) FROM priced ${2:-};"; }
 
 savings_color() {
   if   [ "$1" -ge 50 ]; then printf '%s' "$2"
@@ -187,6 +191,9 @@ report() {
   printf '%s\n' "$rule"
   printf 'picking the cheapest same-spec type each month would save : %s%s%%%s  (%s€%s%s)\n' \
          "$b" "$(stat_savings_pct "$db" "$filter")" "$r" "$b" "$(stat_savings_amount "$db" "$filter")" "$r"
+  printf '  recoverable now : %s%s%%%s  (%s€%s%s)   ·   already lost : %s%s%%%s  (%s€%s%s)\n' \
+         "$b" "$(stat_recoverable_pct "$db" "$filter")" "$r" "$b" "$(stat_recoverable_amount "$db" "$filter")" "$r" \
+         "$b" "$(stat_lost_pct "$db" "$filter")" "$r" "$b" "$(stat_lost_amount "$db" "$filter")" "$r"
   printf '%s\n' "$rule"
 
   while IFS='|' read -r prefix bar pct; do
