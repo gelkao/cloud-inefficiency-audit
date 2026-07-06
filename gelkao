@@ -67,8 +67,8 @@ main() {
   shift $((OPTIND - 1))
   case "${1-}" in
     '')    usage; exit 2 ;;
-    list)  shift; [[ -z "$grouping" ]] || die "-g is not valid for list"; [[ "$data_dir_set" = 0 ]] || die "-d is not valid for list"; cmd_list "$@" ;;
-    fetch) shift; [[ -z "$grouping" ]] || die "-g is not valid for fetch"; cmd_fetch "$data_dir" "$@" ;;
+    list)  shift; [[ -z "$grouping" ]] || die "-g is not valid for list"; [[ "$data_dir_set" = 0 ]] || die "-d is not valid for list"; [[ -z "$db" ]] || die "-f is not valid for list"; cmd_list "$@" ;;
+    fetch) shift; [[ -z "$grouping" ]] || die "-g is not valid for fetch"; [[ -z "$db" ]] || die "-f is not valid for fetch"; cmd_fetch "$data_dir" "$@" ;;
     audit) shift; cmd_audit "$grouping" "$quiet" "$data_dir" "$db" ;;
     *)            cmd_run   "$grouping" "$quiet" "$data_dir" "$db" "$@" ;;
   esac
