@@ -128,23 +128,24 @@ CSV
   [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced;")" = "3.50" ]
 }
 
-@test "gelkao <cn> runs the whole pipeline: extract, fetch (skip), audit" {
+@test "gelkao -d <dir> <cn> runs the whole pipeline into <dir>: extract, fetch (skip), audit" {
   d="$BATS_TEST_TMPDIR/g"; mkdir -p "$d"
   uuid=11111111-2222-3333-4444-555555555555
   invoice_csv "$d/K0000000000-2025-11-$uuid.csv"   # pre-seeded -> fetch skips, no network
   html="$BATS_TEST_TMPDIR/page.html"
   printf '<a href="https://usage.hetzner.com/%s">x</a>\n' "$uuid" > "$html"
 
-  run bash -c "cat '$html' | DATA_DIR='$d' '$ROOT/gelkao' K0000000000"
+  run bash -c "cat '$html' | '$ROOT/gelkao' -d '$d' K0000000000"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"skip"* ]]                     # fetch skipped the pre-seeded invoice (no curl)
+  [[ "$output" == *"skip"* ]]                     # fetch skipped the pre-seeded invoice in <dir> (no curl)
   [[ "$output" == *"would save"* ]]               # audit ran end-to-end
+  [ -f "$d/gelkao.db" ]                            # db landed inside -d <dir>, not the default data/
 }
 
 @test "gelkao -q audit is accepted and produces an audit" {
   d="$BATS_TEST_TMPDIR/q"; mkdir -p "$d"
   invoice_csv "$d/K0000000000-2025-11-x.csv"
-  run bash -c "DATA_DIR='$d' '$ROOT/gelkao' -q audit"
+  run bash -c "'$ROOT/gelkao' -q -d '$d' audit"
   [ "$status" -eq 0 ]
   [[ "$output" == *"would save"* ]]
 }
