@@ -8,17 +8,17 @@ source "$here/lib.sh"
 usage() {
   cat <<'EOF'
 Usage:
-  cat data/*.html | gelkao [-g "<project>"] [-d <dir>] <customer-number>   fetch invoices and audit
-  cat data/*.html | gelkao list                                            list invoice UUIDs
-  gelkao [-d <dir>] fetch <customer-number>                                download invoice CSVs (UUIDs on stdin)
-  gelkao [-g "<project>"] [-d <dir>] audit                                 build the DB from CSVs and audit
+  cat data/*.html | gelkao [-g "<project>"] [-d <dir>] [-f <path>] <customer-number>   fetch invoices and audit
+  cat data/*.html | gelkao list                                                        list invoice UUIDs
+  gelkao [-d <dir>] fetch <customer-number>                                            download invoice CSVs (UUIDs on stdin)
+  gelkao [-g "<project>"] [-d <dir>] [-f <path>] audit                                 build the DB from CSVs and audit
 
   -g "<project>"   audit only one Hetzner project (the invoice "grouping" column);
                    valid for the full run and audit only
   -d <dir>         CSV directory (default: data)
+  -f <path>        database file (default: <dir>/gelkao.db)
   -q               skip the price-refresh prompt (non-interactive)
   HETZNER_CN       customer number (fallback for <customer-number>)
-  DB               database path (default: <dir>/gelkao.db)
 EOF
 }
 
@@ -38,25 +38,26 @@ cmd_fetch() {
 }
 
 cmd_audit() {
-  local grouping=$1 quiet=$2 data_dir=$3
-  audit "$here" "$data_dir" "${DB:-}" "$grouping" "$quiet"
+  local grouping=$1 quiet=$2 data_dir=$3 db=$4
+  audit "$here" "$data_dir" "$db" "$grouping" "$quiet"
 }
 
 cmd_run() {
-  local grouping=$1 quiet=$2 data_dir=$3; shift 3
+  local grouping=$1 quiet=$2 data_dir=$3 db=$4; shift 4
   local cn="${1:-${HETZNER_CN:-}}"
   [[ -n "$cn" ]] || die "customer number required (arg or HETZNER_CN env)"
   banner
-  run_pipeline "$here" "$cn" "$data_dir" "${DB:-}" "$grouping" "$quiet"
+  run_pipeline "$here" "$cn" "$data_dir" "$db" "$grouping" "$quiet"
 }
 
 main() {
-  local OPTIND grouping="" quiet=0 data_dir=data data_dir_set=0
+  local OPTIND grouping="" quiet=0 data_dir=data data_dir_set=0 db=""
   [[ "${1-}" = "--help" ]] && { usage; exit 0; }
-  while getopts ":g:d:hq" opt; do
+  while getopts ":g:d:f:hq" opt; do
     case "$opt" in
       g) grouping=$OPTARG ;;
       d) data_dir=$OPTARG; data_dir_set=1 ;;
+      f) db=$OPTARG ;;
       q) quiet=1 ;;
       h) usage; exit 0 ;;
       :) die "option -$OPTARG requires a value" ;;
@@ -68,8 +69,8 @@ main() {
     '')    usage; exit 2 ;;
     list)  shift; [[ -z "$grouping" ]] || die "-g is not valid for list"; [[ "$data_dir_set" = 0 ]] || die "-d is not valid for list"; cmd_list "$@" ;;
     fetch) shift; [[ -z "$grouping" ]] || die "-g is not valid for fetch"; cmd_fetch "$data_dir" "$@" ;;
-    audit) shift; cmd_audit "$grouping" "$quiet" "$data_dir" ;;
-    *)            cmd_run   "$grouping" "$quiet" "$data_dir" "$@" ;;
+    audit) shift; cmd_audit "$grouping" "$quiet" "$data_dir" "$db" ;;
+    *)            cmd_run   "$grouping" "$quiet" "$data_dir" "$db" "$@" ;;
   esac
 }
 
