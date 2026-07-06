@@ -82,7 +82,7 @@ need_data() {  # audit needs only local CSVs — no network, no credentials
   [ "$status" -eq 0 ]
   [[ "$output" =~ price\ group\ +:\ [a-z]+ ]]
   [[ "$output" =~ would\ save\ :\ [0-9]+\.[0-9]+% ]]
-  [[ "$output" =~ recoverable\ now\ :\ [0-9]+\.[0-9]+%.*already\ lost\ :\ [0-9]+\.[0-9]+% ]]
+  [[ "$output" =~ avoidable\ :\ [0-9]+\.[0-9]+%.*needed\ earlier\ action\ :\ [0-9]+\.[0-9]+% ]]
 }
 
 @test "audit runs the committed synthetic examples with no credentials or network" {
@@ -90,7 +90,7 @@ need_data() {  # audit needs only local CSVs — no network, no credentials
   [ "$status" -eq 0 ]
   [[ "$output" =~ price\ group\ +:\ eu ]]
   [[ "$output" =~ would\ save\ :\ 3[0-9]\.[0-9]+% ]]
-  [[ "$output" =~ recoverable\ now\ :\ [0-9]+\.[0-9]+%.*already\ lost\ :\ [0-9]+\.[0-9]+% ]]
+  [[ "$output" =~ avoidable\ :\ [0-9]+\.[0-9]+%.*needed\ earlier\ action\ :\ [0-9]+\.[0-9]+% ]]
   [ -f "$BATS_TEST_TMPDIR/example.db" ]
   [ ! -f "$ROOT/examples/gelkao.db" ]
 }

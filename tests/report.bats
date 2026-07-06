@@ -141,12 +141,12 @@ locked_pair_db() {
   run audit "$a" "$d" "$BATS_TEST_TMPDIR/r3.db"
   [ "$status" -eq 0 ]
   [ "${lines[0]}" = "period            : 2025-11 .. 2025-11  (1 months)" ]
-  [ "${lines[1]}" = "currency          : EUR  (detected from invoices)" ]
+  [ "${lines[1]}" = "currency          : EUR" ]
   [ "${lines[2]}" = "servers analysed  : 1" ]
   [ "${lines[3]}" = "price group       : eu" ]
   [ "${lines[4]}" = "total paid        : €4.99" ]
-  [ "${lines[5]}" = "current run-rate  : €4.99/mo (last invoice)" ]
-  [ "${lines[7]}" = "picking the cheapest same-spec type each month would save : 24.0%  (€1)" ]
+  [ "${lines[5]}" = "current run-rate  : €4.99/mo" ]
+  [ "${lines[7]}" = "cheapest same-spec each month would save : 24.0%  (€1)" ]
   [[ "${lines[10]}" =~ ^2025-11[[:space:]]+paid[[:space:]]+5[[:space:]]+optimal[[:space:]]+4[[:space:]]+#+[[:space:]]+24%$ ]]
 }
 
@@ -168,11 +168,11 @@ locked_pair_db() {
   [[ "${lines[10]}" =~ [[:space:]]39%$ ]]
 }
 
-@test "the saving splits into still-recoverable and already-lost lines" {
+@test "the saving splits into avoidable and needed-earlier-action lines" {
   a="$BATS_TEST_TMPDIR/lps"; jun2026_assets "$a" 2026-06-15
   d="$BATS_TEST_TMPDIR/lpsd"; mkdir -p "$d"; jun2026_locked_pair_invoice "$d/i.csv"
   run audit "$a" "$d" "$BATS_TEST_TMPDIR/lps.db"
   [ "$status" -eq 0 ]
-  [[ "$output" =~ recoverable.*0\.0%.*\(€0\) ]]
-  [[ "$output" =~ lost.*13\.4%.*\(€2\) ]]
+  [[ "$output" =~ avoidable.*0\.0%.*\(€0\) ]]
+  [[ "$output" =~ earlier\ action.*13\.4%.*\(€2\) ]]
 }
