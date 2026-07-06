@@ -164,7 +164,7 @@ cat data/*.html | ./gelkao list | sort -u
 
 Reads invoice UUIDs on stdin (one per line) and downloads each itemized invoice
 as CSV from `https://usage.hetzner.com/<uuid>?csv&cn=<customer-number>`. Files
-are written to `data/` as `<customer-number>-<YYYY-MM>-<uuid>.csv`, where the
+are written to the data directory as `<customer-number>-<YYYY-MM>-<uuid>.csv`, where the
 year-month comes from the first ISO date in the CSV. Because the UUID is part of
 the filename, an invoice that is already present is detected and skipped
 **before** downloading (the month is wildcarded in the lookup) — so re-runs and
@@ -175,7 +175,7 @@ via `HETZNER_CN`. `-d <dir>` sets the output directory (default `data`).
 
 **OUTPUT** — `ok` / `skip` progress lines on stdout, `fail` lines on stderr, and
 a final `Done. downloaded=N skipped=N failed=N` summary on stderr. CSV files
-land in `data/`.
+land in the data directory.
 
 **EXIT STATUS** — `0` completed (individual download failures are reported but do
 not abort the run) · `1` no customer number supplied.
@@ -218,7 +218,7 @@ current run-rate), a one-line savings figure, and a month-by-month paid-vs-optim
 table with `#` bars. On a terminal the figures are bold and each month's bar and
 percentage are coloured by savings level (red `≥50%`, amber `20–49%`, green
 `<20%`); output is plain when piped or redirected. The database lives at
-`data/gelkao.db` and is a disposable cache, rebuilt from the CSVs on every run —
+`<dir>/gelkao.db` and is a disposable cache, rebuilt from the CSVs on every run —
 safe to delete.
 
 `-d <dir>` sets the invoice CSV folder (default `data`); `-f <path>` sets the

@@ -174,7 +174,7 @@ cat data/*.html | ./gelkao list | sort -u
 
 Liest Rechnungs-UUIDs von der Standardeingabe (eine pro Zeile) und lädt jede
 detaillierte Rechnung als CSV von `https://usage.hetzner.com/<uuid>?csv&cn=<kundennummer>`
-herunter. Die Dateien werden nach `data/` als `<kundennummer>-<YYYY-MM>-<uuid>.csv`
+herunter. Die Dateien werden in das Datenverzeichnis als `<kundennummer>-<YYYY-MM>-<uuid>.csv`
 geschrieben, wobei sich Jahr und Monat aus dem ersten ISO-Datum in der CSV
 ergeben. Da die UUID Teil des Dateinamens ist, wird eine bereits vorhandene
 Rechnung erkannt und **vor** dem Herunterladen übersprungen (der Monat wird bei
@@ -188,7 +188,7 @@ fest (Vorgabe `data`).
 **AUSGABE** – `ok`-/`skip`-Fortschrittszeilen auf der Standardausgabe,
 `fail`-Zeilen auf der Standardfehlerausgabe und abschließend eine Zusammenfassung
 `Done. downloaded=N skipped=N failed=N` auf der Standardfehlerausgabe. Die
-CSV-Dateien landen in `data/`.
+CSV-Dateien landen im Datenverzeichnis.
 
 **EXIT-STATUS** – `0` abgeschlossen (einzelne Download-Fehler werden gemeldet,
 brechen den Lauf jedoch nicht ab) · `1` keine Kundennummer angegeben.
@@ -236,7 +236,7 @@ Run-Rate), einer einzeiligen Ersparnis-Angabe und einer monatsweisen Tabelle
 „bezahlt gegenüber optimal“ mit `#`-Balken. Auf einem Terminal werden die Zahlen
 fett dargestellt und Balken sowie Prozentwert jedes Monats nach Ersparnis-Stufe
 eingefärbt (rot `≥50 %`, gelb `20–49 %`, grün `<20 %`); bei einer Pipe oder
-Umleitung ist die Ausgabe schmucklos. Die Datenbank liegt unter `data/gelkao.db`
+Umleitung ist die Ausgabe schmucklos. Die Datenbank liegt unter `<verzeichnis>/gelkao.db`
 und ist ein wegwerfbarer Cache, der bei jedem Lauf aus den CSVs neu aufgebaut wird
 – ein Löschen ist unbedenklich.
 
