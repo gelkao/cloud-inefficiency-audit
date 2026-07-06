@@ -78,14 +78,14 @@ need_data() {  # audit needs only local CSVs — no network, no credentials
 
 @test "audit loads the real invoice CSVs in data/ and reports a savings figure" {
   need_data
-  DB="$BATS_TEST_TMPDIR/audit.db" run "$ROOT/gelkao" -d "$ROOT/data" audit
+  run "$ROOT/gelkao" -d "$ROOT/data" -f "$BATS_TEST_TMPDIR/audit.db" audit
   [ "$status" -eq 0 ]
   [[ "$output" =~ price\ group\ +:\ [a-z]+ ]]
   [[ "$output" =~ would\ save\ :\ [0-9]+\.[0-9]+% ]]
 }
 
 @test "audit runs the committed synthetic examples with no credentials or network" {
-  DB="$BATS_TEST_TMPDIR/example.db" run "$ROOT/gelkao" -q -d "$ROOT/examples" audit
+  run "$ROOT/gelkao" -q -d "$ROOT/examples" -f "$BATS_TEST_TMPDIR/example.db" audit
   [ "$status" -eq 0 ]
   [[ "$output" =~ price\ group\ +:\ eu ]]
   [[ "$output" =~ would\ save\ :\ 3[0-9]\.[0-9]+% ]]
