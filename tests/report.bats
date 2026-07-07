@@ -109,12 +109,12 @@ rounding_db() {
   run audit "$a" "$d" "$BATS_TEST_TMPDIR/r3.db"
   [ "$status" -eq 0 ]
   [ "${lines[0]}" = "period            : 2025-11 .. 2025-11  (1 months)" ]
-  [ "${lines[1]}" = "currency          : EUR  (detected from invoices)" ]
+  [ "${lines[1]}" = "currency          : EUR" ]
   [ "${lines[2]}" = "servers analysed  : 1" ]
   [ "${lines[3]}" = "price group       : eu" ]
   [ "${lines[4]}" = "total paid        : €4.99" ]
-  [ "${lines[5]}" = "current run-rate  : €4.99/mo (last invoice)" ]
-  [ "${lines[7]}" = "picking the cheapest same-spec type each month would save : 24.0%  (€1)" ]
+  [ "${lines[5]}" = "current run-rate  : €4.99/mo" ]
+  [ "${lines[7]}" = "cheapest same-spec each month would save : 24.0%  (€1)" ]
   [[ "${lines[9]}" =~ ^2025-11[[:space:]]+paid[[:space:]]+5[[:space:]]+optimal[[:space:]]+4[[:space:]]+#+[[:space:]]+24%$ ]]
 }
 

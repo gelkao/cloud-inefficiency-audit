@@ -179,13 +179,13 @@ report() {
   filter=$(grouping_filter "$grouping")
 
   printf 'period            : %s%s%s\n'                       "$b" "$(stat_period      "$db" "$filter")" "$r"
-  printf 'currency          : %s%s%s  (detected from invoices)\n' "$b" "$(stat_currency "$db" "$filter")" "$r"
+  printf 'currency          : %s%s%s\n' "$b" "$(stat_currency "$db" "$filter")" "$r"
   printf 'servers analysed  : %s%s%s\n'                       "$b" "$(stat_servers     "$db" "$filter")" "$r"
   printf 'price group       : %s%s%s\n'                       "$b" "$(account_price_group "$db")" "$r"
   printf 'total paid        : %s€%s%s\n'                      "$b" "$(stat_total_paid  "$db" "$filter")" "$r"
-  printf 'current run-rate  : %s€%s%s/mo (last invoice)\n'    "$b" "$(stat_run_rate    "$db" "$filter")" "$r"
+  printf 'current run-rate  : %s€%s%s/mo\n'    "$b" "$(stat_run_rate    "$db" "$filter")" "$r"
   printf '%s\n' "$rule"
-  printf 'picking the cheapest same-spec type each month would save : %s%s%%%s  (%s€%s%s)\n' \
+  printf 'cheapest same-spec each month would save : %s%s%%%s  (%s€%s%s)\n' \
          "$b" "$(stat_savings_pct "$db" "$filter")" "$r" "$b" "$(stat_savings_amount "$db" "$filter")" "$r"
   printf '%s\n' "$rule"
 
