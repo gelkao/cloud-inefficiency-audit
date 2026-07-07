@@ -94,6 +94,14 @@ grouping,product,description,reference,quantity,from,until,condition,unit,extern
 CSV
 }
 
+jun2026_two_box_invoice() {
+  cat > "$1" <<CSV
+grouping,product,description,reference,quantity,from,until,condition,unit,external id,price,total
+"P","CPX31 Cloud Server",,,"1.0000",2026-07-01,2026-07-31,,"Months","c1",,"€ 20.9900"
+"P","CX33 Cloud Server",,,"1.0000",2026-07-01,2026-07-31,,"Months","x1",,"€ 6.4900"
+CSV
+}
+
 jun2026_solo_assets() {
   mkdir -p "$1/providers/hetzner"
   cp "$ROOT/schema.sql" "$ROOT/audit.sql" "$1/"

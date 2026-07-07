@@ -161,6 +161,13 @@ CSV
   [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced WHERE month='2026-07';")" = "8.49" ]
 }
 
+@test "scoring 1: a box is priced against its cheaper same-spec at list, never borrowing another fleet box's locked rate" {
+  a="$BATS_TEST_TMPDIR/tba"; jun2026_assets "$a"
+  d="$BATS_TEST_TMPDIR/tbd"; mkdir -p "$d"; jun2026_two_box_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/tb.db"; build_db "$db" "$a" "$d" >/dev/null
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced WHERE box='c1';")" = "8.49" ]
+}
+
 @test "a lone post-15-Jun invoice still detects its price group from an old locked rate, so the box is priced against the cheaper type (no false 0%)" {
   a="$BATS_TEST_TMPDIR/pha"; jun2026_assets "$a"
   d="$BATS_TEST_TMPDIR/phd"; mkdir -p "$d"; jun2026_post_hike_only_invoice "$d/i.csv"

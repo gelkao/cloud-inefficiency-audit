@@ -26,13 +26,6 @@ SELECT price_group FROM (
   LIMIT 1
 );
 
-DROP VIEW IF EXISTS customer_rates;
-CREATE VIEW customer_rates AS
-SELECT type, month, kind, MIN(paid / qty) AS rate
-FROM line_items
-WHERE qty > 0
-GROUP BY type, month, kind;
-
 DROP TABLE IF EXISTS priced;
 CREATE TABLE priced AS
 SELECT
@@ -41,16 +34,13 @@ SELECT
   MIN(
     COALESCE(
       ( SELECT MIN(
-          COALESCE(
-            ( SELECT cr.rate FROM customer_rates cr
-               WHERE cr.type = cand.type AND cr.month = li.month AND cr.kind = li.kind ),
-            ( SELECT CASE WHEN li.kind = 'hourly' THEN p.price_hourly ELSE p.price_monthly END
-               FROM prices p
-               WHERE p.type = cand.type AND p.currency = li.currency
-                 AND p.price_group = (SELECT price_group FROM detected_group)
-                 AND p.effective_from <= li.date
-               ORDER BY p.effective_from DESC LIMIT 1 )
-          ) )
+          ( SELECT CASE WHEN li.kind = 'hourly' THEN p.price_hourly ELSE p.price_monthly END
+             FROM prices p
+             WHERE p.type = cand.type AND p.currency = li.currency
+               AND p.price_group = (SELECT price_group FROM detected_group)
+               AND p.effective_from <= li.date
+             ORDER BY p.effective_from DESC LIMIT 1 )
+        )
         FROM server_types cand
         WHERE cand.ram_gb = st.ram_gb AND cand.vcpu >= st.vcpu
       ) * li.qty,
