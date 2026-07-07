@@ -153,6 +153,29 @@ CSV
   [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced;")" = "3.50" ]
 }
 
+@test "an untouched box across the 15-Jun hike is scored month by month: its optimal rises 6.49 (Jun) to 8.49 (Jul) as the cheap alternative recedes" {
+  a="$BATS_TEST_TMPDIR/uha"; jun2026_assets "$a"
+  d="$BATS_TEST_TMPDIR/uhd"; mkdir -p "$d"; jun2026_untouched_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/uh.db"; build_db "$db" "$a" "$d" >/dev/null
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced WHERE month='2026-06';")" = "6.49" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced WHERE month='2026-07';")" = "8.49" ]
+}
+
+@test "a lone post-15-Jun invoice still detects its price group from an old locked rate, so the box is priced against the cheaper type (no false 0%)" {
+  a="$BATS_TEST_TMPDIR/pha"; jun2026_assets "$a"
+  d="$BATS_TEST_TMPDIR/phd"; mkdir -p "$d"; jun2026_post_hike_only_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/ph.db"; build_db "$db" "$a" "$d" >/dev/null
+  [ "$(sqlite3 "$db" "SELECT price_group FROM detected_group;")" = "eu" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced;")" = "8.49" ]
+}
+
+@test "a same-type box reacquired after the hike is optimal at the new price, not judged against the torn-down box's gone April rate" {
+  a="$BATS_TEST_TMPDIR/ra"; jun2026_solo_assets "$a"
+  d="$BATS_TEST_TMPDIR/rd"; mkdir -p "$d"; jun2026_reacquired_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/r.db"; build_db "$db" "$a" "$d" >/dev/null
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced WHERE box='t2';")" = "22.08" ]
+}
+
 @test "gelkao -d <dir> <cn> runs the whole pipeline into <dir>: extract, fetch (skip), audit" {
   d="$BATS_TEST_TMPDIR/g"; mkdir -p "$d"
   uuid=11111111-2222-3333-4444-555555555555
