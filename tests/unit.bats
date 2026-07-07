@@ -176,6 +176,15 @@ CSV
   [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced WHERE box='t2';")" = "22.08" ]
 }
 
+@test "an all-hourly fleet still detects its price group so a cheaper same-spec type is priced (no false 0% for short-lived boxes)" {
+  skip "DKH-653: no monthly line -> detect_group empty -> cheaper same-spec type left unpriced; needs hourly-line voting"
+  a="$BATS_TEST_TMPDIR/epa"; jun2026_assets "$a"
+  d="$BATS_TEST_TMPDIR/epd"; mkdir -p "$d"; jun2026_ephemeral_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/ep.db"; build_db "$db" "$a" "$d" >/dev/null
+  [ "$(sqlite3 "$db" "SELECT price_group FROM detected_group;")" = "eu" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced;")" = "4.57" ]
+}
+
 @test "gelkao -d <dir> <cn> runs the whole pipeline into <dir>: extract, fetch (skip), audit" {
   d="$BATS_TEST_TMPDIR/g"; mkdir -p "$d"
   uuid=11111111-2222-3333-4444-555555555555
