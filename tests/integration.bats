@@ -5,6 +5,10 @@
 #
 #   HETZNER_CN=K... INVOICE_HTML=data/your-invoices.html bats tests/integration.bats
 #
+# The real-data audit smoke test audits every customer dataset placed under
+# ./data (one subfolder of CSVs each). It runs locally only — on CI ./data is
+# empty, so it skips.
+#
 # Asserts are generic — shapes and counts only, never specific months/amounts.
 
 setup() {
@@ -22,10 +26,13 @@ need_creds() {
   [[ -f "${INVOICE_HTML}"   ]] || skip "INVOICE_HTML not found: ${INVOICE_HTML}"
 }
 
-need_data() {  # audit needs only local CSVs — no network, no credentials
+datasets() {  # each data/<name>/ folder that holds invoice CSVs
   shopt -s nullglob
-  local csvs=( "$ROOT"/data/*.csv )
-  [ "${#csvs[@]}" -ge 1 ] || skip "no CSVs in data/ — run the fetch pipeline first"
+  local d csvs
+  for d in "$ROOT"/data/*/; do
+    csvs=( "$d"*.csv )
+    [ "${#csvs[@]}" -ge 1 ] && printf '%s\n' "${d%/}"
+  done
 }
 
 @test "update_prices fetches well-formed price and spec tables from the live endpoint" {
@@ -76,12 +83,19 @@ need_data() {  # audit needs only local CSVs — no network, no credentials
   [ "$status" -ne 0 ]
 }
 
-@test "audit loads the real invoice CSVs in data/ and reports a savings figure" {
-  need_data
-  run "$ROOT/gelkao" -d "$ROOT/data" -f "$BATS_TEST_TMPDIR/audit.db" audit
-  [ "$status" -eq 0 ]
-  [[ "$output" =~ price\ group\ +:\ [a-z]+ ]]
-  [[ "$output" =~ would\ save\ :\ [0-9]+\.[0-9]+% ]]
+@test "smoke: audit every real dataset under data/ and report each savings figure" {
+  [[ -z "${GITHUB_ACTIONS:-}" ]] || skip "real-data smoke test runs locally only, not in CI"
+  local d name out n=0
+  while read -r d; do
+    name=$(basename "$d")
+    out=$("$ROOT/gelkao" -q -d "$d" -f "$BATS_TEST_TMPDIR/$name.db" audit) \
+      || { echo "audit failed for $name"; return 1; }
+    grep -qE 'price group +: [a-z]+'        <<<"$out" || { echo "no price group for $name"; return 1; }
+    grep -qE 'would save : [0-9]+\.[0-9]+%'  <<<"$out" || { echo "no savings figure for $name"; return 1; }
+    echo "  $name — $(grep -oE 'would save : [0-9]+\.[0-9]+%' <<<"$out")" >&3
+    n=$((n+1))
+  done < <(datasets)
+  [ "$n" -ge 1 ] || { echo "no datasets under $ROOT/data/*/ (each needs a K file + CSVs)"; return 1; }
 }
 
 @test "audit runs the committed synthetic examples with no credentials or network" {
