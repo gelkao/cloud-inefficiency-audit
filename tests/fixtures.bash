@@ -102,6 +102,84 @@ grouping,product,description,reference,quantity,from,until,condition,unit,extern
 CSV
 }
 
+jun2026_scaleup_assets() {
+  mkdir -p "$1/providers/hetzner"
+  cp "$ROOT/schema.sql" "$ROOT/audit.sql" "$1/"
+  cat > "$1/providers/hetzner/prices.csv" <<CSV
+type,price_group,currency,effective_from,price_hourly,price_monthly
+cx33,eu,eur,2025-10-01,0.0080,4.99
+cx33,eu,eur,2026-04-01,0.0104,6.49
+cpx32,eu,eur,2025-10-01,0.0224,13.99
+CSV
+  cat > "$1/providers/hetzner/server_types.csv" <<CSV
+type,vcpu,ram_gb
+cx33,4,8
+cpx32,4,8
+CSV
+}
+
+jun2026_scaleup_invoice() {
+  cat > "$1" <<CSV
+grouping,product,description,reference,quantity,from,until,condition,unit,external id,price,total
+"P","CX33 Cloud Server",,,"1.0000",2026-05-01,2026-05-31,,"Months","b1",,"€ 4.9900"
+"P","CPX32 Cloud Server",,,"1.0000",2026-06-01,2026-06-30,,"Months","b1",,"€ 13.9900"
+CSV
+}
+
+jun2026_mixed_kind_invoice() {
+  cat > "$1" <<CSV
+grouping,product,description,reference,quantity,from,until,condition,unit,external id,price,total
+"P","CPX31 Cloud Server",,,"240",2026-05-01,2026-05-31,,"Hours","m1",,"€ 8.06"
+"P","CPX31 Cloud Server",,,"1.0000",2026-06-01,2026-06-30,,"Months","m1",,"€ 20.9900"
+CSV
+}
+
+jun2026_reprice_assets() {
+  mkdir -p "$1/providers/hetzner"
+  cp "$ROOT/schema.sql" "$ROOT/audit.sql" "$1/"
+  cat > "$1/providers/hetzner/prices.csv" <<CSV
+type,price_group,currency,effective_from,price_hourly,price_monthly
+cx33,eu,eur,2025-10-01,0.0080,4.99
+cx33,eu,eur,2026-04-01,0.0104,6.49
+cx33,eu,eur,2026-06-15,0.0136,8.49
+CSV
+  cat > "$1/providers/hetzner/server_types.csv" <<CSV
+type,vcpu,ram_gb
+cx33,4,8
+CSV
+}
+
+jun2026_across_april_invoice() {
+  cat > "$1" <<CSV
+grouping,product,description,reference,quantity,from,until,condition,unit,external id,price,total
+"P","CX33 Cloud Server",,,"1.0000",2026-03-01,2026-03-31,,"Months","g1",,"€ 4.9900"
+"P","CX33 Cloud Server",,,"1.0000",2026-05-01,2026-05-31,,"Months","g1",,"€ 6.4900"
+CSV
+}
+
+jun2026_resize_assets() {
+  mkdir -p "$1/providers/hetzner"
+  cp "$ROOT/schema.sql" "$ROOT/audit.sql" "$1/"
+  cat > "$1/providers/hetzner/prices.csv" <<CSV
+type,price_group,currency,effective_from,price_hourly,price_monthly
+cx22,eu,eur,2026-04-01,0.0060,3.79
+cx33,eu,eur,2026-04-01,0.0104,6.49
+CSV
+  cat > "$1/providers/hetzner/server_types.csv" <<CSV
+type,vcpu,ram_gb
+cx22,2,4
+cx33,4,8
+CSV
+}
+
+jun2026_resize_invoice() {
+  cat > "$1" <<CSV
+grouping,product,description,reference,quantity,from,until,condition,unit,external id,price,total
+"P","CX22 Cloud Server",,,"1.0000",2026-05-01,2026-05-31,,"Months","b1",,"€ 3.7900"
+"P","CX33 Cloud Server",,,"1.0000",2026-06-01,2026-06-30,,"Months","b1",,"€ 6.4900"
+CSV
+}
+
 jun2026_solo_assets() {
   mkdir -p "$1/providers/hetzner"
   cp "$ROOT/schema.sql" "$ROOT/audit.sql" "$1/"

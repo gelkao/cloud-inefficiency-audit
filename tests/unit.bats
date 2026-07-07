@@ -168,6 +168,46 @@ CSV
   [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced WHERE box='c1';")" = "8.49" ]
 }
 
+@test "scoring 2: optimal_locked holds the cheapest rate available since the box's first month, not the risen list" {
+  a="$BATS_TEST_TMPDIR/lka"; jun2026_assets "$a"
+  d="$BATS_TEST_TMPDIR/lkd"; mkdir -p "$d"; jun2026_untouched_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/lk.db"; build_db "$db" "$a" "$d" >/dev/null
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal_locked) FROM priced WHERE month='2026-06';")" = "6.49" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal_locked) FROM priced WHERE month='2026-07';")" = "6.49" ]
+}
+
+@test "scoring 2: Alice keeps the cheap box she inherited when Bob scales it up, not the pricier market rate" {
+  a="$BATS_TEST_TMPDIR/sua"; jun2026_scaleup_assets "$a"
+  d="$BATS_TEST_TMPDIR/sud"; mkdir -p "$d"; jun2026_scaleup_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/su.db"; build_db "$db" "$a" "$d" >/dev/null
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal_locked) FROM priced WHERE month='2026-05';")" = "4.99" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal_locked) FROM priced WHERE month='2026-06';")" = "4.99" ]
+}
+
+@test "scoring 2: a box with both hourly and monthly lines keeps units separate — no hourly rate leaks into the monthly lock" {
+  a="$BATS_TEST_TMPDIR/mka"; jun2026_assets "$a"
+  d="$BATS_TEST_TMPDIR/mkd"; mkdir -p "$d"; jun2026_mixed_kind_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/mk.db"; build_db "$db" "$a" "$d" >/dev/null
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal_locked) FROM priced WHERE month='2026-06';")" = "6.49" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal_locked) FROM priced WHERE month='2026-05';")" = "2.50" ]
+}
+
+@test "scoring 2: the lock resets across a non-grandfathered hike (only 15-Jun-2026 grandfathers), so a pre-April rate is not carried past it" {
+  a="$BATS_TEST_TMPDIR/gfa"; jun2026_reprice_assets "$a"
+  d="$BATS_TEST_TMPDIR/gfd"; mkdir -p "$d"; jun2026_across_april_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/gf.db"; build_db "$db" "$a" "$d" >/dev/null
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal_locked) FROM priced WHERE month='2026-03';")" = "4.99" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal_locked) FROM priced WHERE month='2026-05';")" = "6.49" ]
+}
+
+@test "scoring 2: resizing a box to a bigger spec resets the lock — a cheap small-box rate is not carried onto the bigger box" {
+  a="$BATS_TEST_TMPDIR/rza"; jun2026_resize_assets "$a"
+  d="$BATS_TEST_TMPDIR/rzd"; mkdir -p "$d"; jun2026_resize_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/rz.db"; build_db "$db" "$a" "$d" >/dev/null
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal_locked) FROM priced WHERE month='2026-05';")" = "3.79" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal_locked) FROM priced WHERE month='2026-06';")" = "6.49" ]
+}
+
 @test "a lone post-15-Jun invoice still detects its price group from an old locked rate, so the box is priced against the cheaper type (no false 0%)" {
   a="$BATS_TEST_TMPDIR/pha"; jun2026_assets "$a"
   d="$BATS_TEST_TMPDIR/phd"; mkdir -p "$d"; jun2026_post_hike_only_invoice "$d/i.csv"
