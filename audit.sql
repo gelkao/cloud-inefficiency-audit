@@ -20,10 +20,6 @@ SELECT price_group FROM (
   FROM line_items li
   JOIN prices p
     ON p.type = li.type AND p.currency = li.currency
-   AND p.effective_from = (
-         SELECT MAX(p2.effective_from) FROM prices p2
-         WHERE p2.type = li.type AND p2.price_group = p.price_group
-           AND p2.currency = li.currency AND p2.effective_from <= li.date)
   WHERE li.kind = 'monthly' AND ABS(li.paid - p.price_monthly) < 0.02
   GROUP BY p.price_group
   ORDER BY votes DESC, p.price_group
