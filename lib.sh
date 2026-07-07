@@ -162,6 +162,10 @@ stat_total_paid()     { sqlite3 "$1" "SELECT printf('%.2f', SUM(paid)) FROM pric
 stat_run_rate()       { sqlite3 "$1" "SELECT printf('%.2f', SUM(CASE WHEN month = (SELECT MAX(month) FROM priced ${2:-}) THEN paid ELSE 0 END)) FROM priced ${2:-};"; }
 stat_savings_pct()    { sqlite3 "$1" "SELECT printf('%.1f', (SUM(paid) - SUM(optimal)) * 100.0 / SUM(paid)) FROM priced ${2:-};"; }
 stat_savings_amount() { sqlite3 "$1" "SELECT printf('%.0f', round(SUM(paid) - SUM(optimal))) FROM priced ${2:-};"; }
+stat_recoverable_pct()    { sqlite3 "$1" "SELECT printf('%.1f', (SUM(paid) - SUM(optimal_recoverable)) * 100.0 / SUM(paid)) FROM priced ${2:-};"; }
+stat_recoverable_amount() { sqlite3 "$1" "SELECT printf('%.0f', round(SUM(paid) - SUM(optimal_recoverable))) FROM priced ${2:-};"; }
+stat_lost_pct()       { sqlite3 "$1" "SELECT printf('%.1f', (SUM(optimal_recoverable) - SUM(optimal)) * 100.0 / SUM(paid)) FROM priced ${2:-};"; }
+stat_lost_amount()    { sqlite3 "$1" "SELECT printf('%.0f', round(SUM(optimal_recoverable) - SUM(optimal))) FROM priced ${2:-};"; }
 
 savings_color() {
   if   [ "$1" -ge 50 ]; then printf '%s' "$2"
@@ -171,7 +175,7 @@ savings_color() {
 
 report() {
   local db=$1 grouping=${2:-} filter rule='------------------------------------------------------------------'
-  local b='' r='' red='' amber='' green='' prefix bar pct c
+  local b='' r='' red='' amber='' green='' prefix bar pct c spct spi
   if [ -t 1 ]; then
     b=$'\e[1m'; r=$'\e[0m'
     red=$'\e[1;31m'; amber=$'\e[1;33m'; green=$'\e[1;32m'
@@ -179,14 +183,20 @@ report() {
   filter=$(grouping_filter "$grouping")
 
   printf 'period            : %s%s%s\n'                       "$b" "$(stat_period      "$db" "$filter")" "$r"
-  printf 'currency          : %s%s%s  (detected from invoices)\n' "$b" "$(stat_currency "$db" "$filter")" "$r"
+  printf 'currency          : %s%s%s\n' "$b" "$(stat_currency "$db" "$filter")" "$r"
   printf 'servers analysed  : %s%s%s\n'                       "$b" "$(stat_servers     "$db" "$filter")" "$r"
   printf 'price group       : %s%s%s\n'                       "$b" "$(account_price_group "$db")" "$r"
   printf 'total paid        : %s€%s%s\n'                      "$b" "$(stat_total_paid  "$db" "$filter")" "$r"
-  printf 'current run-rate  : %s€%s%s/mo (last invoice)\n'    "$b" "$(stat_run_rate    "$db" "$filter")" "$r"
+  printf 'current run-rate  : %s€%s%s/mo\n'    "$b" "$(stat_run_rate    "$db" "$filter")" "$r"
   printf '%s\n' "$rule"
-  printf 'picking the cheapest same-spec type each month would save : %s%s%%%s  (%s€%s%s)\n' \
-         "$b" "$(stat_savings_pct "$db" "$filter")" "$r" "$b" "$(stat_savings_amount "$db" "$filter")" "$r"
+  spct=$(stat_savings_pct "$db" "$filter")
+  printf -v spi '%.0f' "$spct"
+  printf 'cheapest same-spec each month would save : %s%s%%%s  (%s€%s%s)\n' \
+         "$(savings_color "$spi" "$red" "$amber" "$green")" "$spct" "$r" \
+         "$b" "$(stat_savings_amount "$db" "$filter")" "$r"
+  printf 'avoidable : %s%s%%%s  (%s€%s%s)   ·   needed earlier action : %s%s%%%s  (%s€%s%s)\n' \
+         "$b" "$(stat_recoverable_pct "$db" "$filter")" "$r" "$b" "$(stat_recoverable_amount "$db" "$filter")" "$r" \
+         "$b" "$(stat_lost_pct "$db" "$filter")" "$r" "$b" "$(stat_lost_amount "$db" "$filter")" "$r"
   printf '%s\n' "$rule"
 
   while IFS='|' read -r prefix bar pct; do
