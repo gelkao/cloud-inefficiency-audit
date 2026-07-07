@@ -115,3 +115,10 @@ grouping,product,description,reference,quantity,from,until,condition,unit,extern
 "P","CPX31 Cloud Server",t2,,"336",2026-06-16,2026-06-30,,"Hours","t2",,"€ 22.08"
 CSV
 }
+
+jun2026_ephemeral_invoice() {
+  cat > "$1" <<CSV
+grouping,product,description,reference,quantity,from,until,condition,unit,external id,price,total
+"P","CPX31 Cloud Server",eph,,"336",2026-06-16,2026-06-30,,"Hours","eph",,"€ 22.08"
+CSV
+}
