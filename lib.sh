@@ -171,7 +171,7 @@ savings_color() {
 
 report() {
   local db=$1 grouping=${2:-} filter rule='------------------------------------------------------------------'
-  local b='' r='' red='' amber='' green='' prefix bar pct c
+  local b='' r='' red='' amber='' green='' prefix bar pct c spct spi
   if [ -t 1 ]; then
     b=$'\e[1m'; r=$'\e[0m'
     red=$'\e[1;31m'; amber=$'\e[1;33m'; green=$'\e[1;32m'
@@ -185,8 +185,11 @@ report() {
   printf 'total paid        : %s€%s%s\n'                      "$b" "$(stat_total_paid  "$db" "$filter")" "$r"
   printf 'current run-rate  : %s€%s%s/mo\n'    "$b" "$(stat_run_rate    "$db" "$filter")" "$r"
   printf '%s\n' "$rule"
+  spct=$(stat_savings_pct "$db" "$filter")
+  printf -v spi '%.0f' "$spct"
   printf 'cheapest same-spec each month would save : %s%s%%%s  (%s€%s%s)\n' \
-         "$b" "$(stat_savings_pct "$db" "$filter")" "$r" "$b" "$(stat_savings_amount "$db" "$filter")" "$r"
+         "$(savings_color "$spi" "$red" "$amber" "$green")" "$spct" "$r" \
+         "$b" "$(stat_savings_amount "$db" "$filter")" "$r"
   printf '%s\n' "$rule"
 
   while IFS='|' read -r prefix bar pct; do
