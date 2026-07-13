@@ -28,6 +28,14 @@ setup() {
   [ "$output" = "" ]
 }
 
+@test "month_of_csv extracts YYYY-MM from a German DD.MM.YYYY date" {
+  f="$BATS_TEST_TMPDIR/de.csv"
+  printf 'grouping,from,total\nServer,01.06.2026,1.00\n' > "$f"
+  run month_of_csv "$f"
+  [ "$status" -eq 0 ]
+  [ "$output" = "2026-06" ]
+}
+
 @test "extract_uuids pulls UUIDs out of invoice HTML" {
   f="$BATS_TEST_TMPDIR/page.html"
   cat > "$f" <<'HTML'
