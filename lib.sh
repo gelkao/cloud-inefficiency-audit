@@ -44,7 +44,12 @@ invoice_csv_url() { printf 'https://usage.hetzner.com/%s?csv&cn=%s' "$1" "$2"; }
 month_of_csv() {
   local d
   d=$(grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' "$1" | head -1 || true)
-  printf '%s' "${d:0:7}"
+  if [ -n "$d" ]; then
+    printf '%s' "${d:0:7}"
+    return
+  fi
+  d=$(grep -oE '[0-9]{2}\.[0-9]{2}\.[0-9]{4}' "$1" | head -1 || true)
+  [ -n "$d" ] && printf '%s-%s' "${d:6:4}" "${d:3:2}"
 }
 
 
