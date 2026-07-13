@@ -10,7 +10,7 @@ SELECT
   CAST(TRIM(REPLACE(REPLACE(REPLACE(total,'€',''),'$',''),',','')) AS REAL) AS paid,
   CASE WHEN total LIKE '%$%' THEN 'usd' ELSE 'eur' END       AS currency,
   grouping
-FROM raw_invoices
+FROM invoices
 WHERE product LIKE '%Cloud Server%';
 
 DROP VIEW IF EXISTS detected_group;

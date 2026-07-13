@@ -18,7 +18,7 @@ CSV
 
 stage_assets() {
   mkdir -p "$1/providers/hetzner"
-  cp "$ROOT/schema.sql" "$ROOT/audit.sql" "$1/"
+  cp "$ROOT/schema.sql" "$ROOT/audit.sql" "$ROOT/normalize.sql" "$1/"
 }
 
 fixture_assets() {
