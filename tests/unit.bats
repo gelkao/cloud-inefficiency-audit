@@ -191,6 +191,21 @@ CSV
   [ "$(sqlite3 "$db" "SELECT printf('%.2f', quantity) FROM invoices WHERE external_id='d';")" = "10.00" ]
 }
 
+@test "normalize.sql maps German unit words to English" {
+  db="$BATS_TEST_TMPDIR/unit.db"
+  sqlite3 "$db" < "$ROOT/schema.sql"
+  sqlite3 "$db" "INSERT INTO raw_invoices (external_id, from_date, unit) VALUES
+    ('a','01.06.2026','Stunden'),
+    ('b','01.06.2026','Monate'),
+    ('c','01.06.2026','TB-Stunden'),
+    ('d','2026-06-01','Hours');"
+  sqlite3 "$db" < "$ROOT/normalize.sql"
+  [ "$(sqlite3 "$db" "SELECT unit FROM invoices WHERE external_id='a';")" = "Hours" ]
+  [ "$(sqlite3 "$db" "SELECT unit FROM invoices WHERE external_id='b';")" = "Months" ]
+  [ "$(sqlite3 "$db" "SELECT unit FROM invoices WHERE external_id='c';")" = "TB-Hours" ]
+  [ "$(sqlite3 "$db" "SELECT unit FROM invoices WHERE external_id='d';")" = "Hours" ]
+}
+
 @test "an untouched box across the 15-Jun hike is scored month by month: its optimal rises 6.49 (Jun) to 8.49 (Jul) as the cheap alternative recedes" {
   a="$BATS_TEST_TMPDIR/uha"; jun2026_assets "$a"
   d="$BATS_TEST_TMPDIR/uhd"; mkdir -p "$d"; jun2026_untouched_invoice "$d/i.csv"
