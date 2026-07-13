@@ -40,6 +40,12 @@ cx33_invoice() {
 CSV
 }
 
+cx33_invoice_de() {
+  write_invoice "$1" <<CSV
+"P","CX33 Cloud Server",,,"1,0000",01.11.2025,30.11.2025,,"Monate","b1",,"4,9900 €"
+CSV
+}
+
 rounding_assets() {
   stage_assets "$1"
   write_prices "$1" <<CSV
