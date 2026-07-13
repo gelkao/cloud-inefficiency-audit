@@ -137,6 +137,16 @@ HTML
   [ "$(sqlite3 "$db" "SELECT printf('%.2f|%.2f', paid, optimal) FROM priced;")" = "4.99|3.79" ]
 }
 
+@test "build_db audits a German-locale invoice identically to English (end-to-end)" {
+  a="$BATS_TEST_TMPDIR/dea"; fixture_assets "$a"
+  d="$BATS_TEST_TMPDIR/ded"; mkdir -p "$d"; cx33_invoice_de "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/de2.db"
+  run build_db "$db" "$a" "$d"
+  [ "$status" -eq 0 ]
+  [ "$(sqlite3 "$db" 'SELECT price_group FROM detected_group;')" = "eu" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%s|%s|%.2f|%.2f', month, kind, paid, optimal) FROM priced;")" = "2025-11|monthly|4.99|3.79" ]
+}
+
 @test "build_db fails when a price asset is missing" {
   a="$BATS_TEST_TMPDIR/assets3"; fixture_assets "$a"; rm "$a/providers/hetzner/prices.csv"
   d="$BATS_TEST_TMPDIR/inv3"; mkdir -p "$d"; cx33_invoice "$d/i.csv"
