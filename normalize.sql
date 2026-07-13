@@ -19,7 +19,8 @@ SELECT
        ELSE from_date END                                          AS from_date,
   until_date,
   condition,
-  unit,
+  CASE WHEN is_de THEN REPLACE(REPLACE(unit, 'Stunden', 'Hours'), 'Monate', 'Months')
+       ELSE unit END                                               AS unit,
   external_id,
   price,
   CAST(CASE WHEN is_de THEN REPLACE(REPLACE(amount, '.', ''), ',', '.')
