@@ -6,9 +6,9 @@ SELECT
   substr(from_date, 1, 7)                                    AS month,
   lower(substr(product, 1, instr(product, ' ') - 1))         AS type,
   CASE WHEN unit = 'Hours' THEN 'hourly' ELSE 'monthly' END  AS kind,
-  CAST(quantity AS REAL)                                     AS qty,
-  CAST(TRIM(REPLACE(REPLACE(REPLACE(total,'€',''),'$',''),',','')) AS REAL) AS paid,
-  CASE WHEN total LIKE '%$%' THEN 'usd' ELSE 'eur' END       AS currency,
+  quantity                                                   AS qty,
+  total                                                      AS paid,
+  currency,
   grouping
 FROM invoices
 WHERE product LIKE '%Cloud Server%';
