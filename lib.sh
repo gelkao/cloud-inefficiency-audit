@@ -146,6 +146,7 @@ build_db() {
   import_invoices "$db" "$data_dir"
   sqlite3 "$db" ".mode csv" ".import --skip 1 '$prices' prices"
   sqlite3 "$db" ".mode csv" ".import --skip 1 '$spec' server_types"
+  sqlite3 "$db" < "$assets/normalize.sql"
   sqlite3 "$db" < "$assets/audit.sql"
 }
 
