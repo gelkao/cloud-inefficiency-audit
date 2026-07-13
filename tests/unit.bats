@@ -147,6 +147,20 @@ HTML
   [ "$(sqlite3 "$db" "SELECT printf('%s|%s|%.2f|%.2f', month, kind, paid, optimal) FROM priced;")" = "2025-11|monthly|4.99|3.79" ]
 }
 
+@test "build_db audits a data dir mixing English and German invoices (per-row locale)" {
+  a="$BATS_TEST_TMPDIR/mixa"; fixture_assets "$a"
+  d="$BATS_TEST_TMPDIR/mixd"; mkdir -p "$d"
+  cx33_invoice "$d/en.csv"
+  write_invoice "$d/de.csv" <<CSV
+"P","CX33 Cloud Server",,,"1,0000",01.12.2025,31.12.2025,,"Monate","b2",,"4,9900 €"
+CSV
+  db="$BATS_TEST_TMPDIR/mix.db"
+  run build_db "$db" "$a" "$d"
+  [ "$status" -eq 0 ]
+  [ "$(sqlite3 "$db" "SELECT printf('%s|%.2f', month, paid) FROM priced WHERE box='b1';")" = "2025-11|4.99" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%s|%.2f', month, paid) FROM priced WHERE box='b2';")" = "2025-12|4.99" ]
+}
+
 @test "build_db fails when a price asset is missing" {
   a="$BATS_TEST_TMPDIR/assets3"; fixture_assets "$a"; rm "$a/providers/hetzner/prices.csv"
   d="$BATS_TEST_TMPDIR/inv3"; mkdir -p "$d"; cx33_invoice "$d/i.csv"
