@@ -161,6 +161,21 @@ CSV
   [ "$(sqlite3 "$db" 'SELECT from_date FROM invoices;')" = "2026-06-01" ]
 }
 
+@test "normalize.sql parses total amounts robustly across locale and thousands separators" {
+  db="$BATS_TEST_TMPDIR/amt.db"
+  sqlite3 "$db" < "$ROOT/schema.sql"
+  sqlite3 "$db" "INSERT INTO raw_invoices (external_id, from_date, total) VALUES
+    ('a','01.06.2026','4,4900 €'),
+    ('b','01.06.2026','1.036,49 €'),
+    ('c','2026-06-01','€ 1,036.49'),
+    ('d','2026-06-01','€ 157.3000');"
+  sqlite3 "$db" < "$ROOT/normalize.sql"
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', total) FROM invoices WHERE external_id='a';")" = "4.49" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', total) FROM invoices WHERE external_id='b';")" = "1036.49" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', total) FROM invoices WHERE external_id='c';")" = "1036.49" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', total) FROM invoices WHERE external_id='d';")" = "157.30" ]
+}
+
 @test "an untouched box across the 15-Jun hike is scored month by month: its optimal rises 6.49 (Jun) to 8.49 (Jul) as the cheap alternative recedes" {
   a="$BATS_TEST_TMPDIR/uha"; jun2026_assets "$a"
   d="$BATS_TEST_TMPDIR/uhd"; mkdir -p "$d"; jun2026_untouched_invoice "$d/i.csv"
