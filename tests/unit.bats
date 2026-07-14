@@ -153,6 +153,14 @@ CSV
   [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced;")" = "3.50" ]
 }
 
+@test "normalize.sql converts a German DD.MM.YYYY from_date to ISO" {
+  db="$BATS_TEST_TMPDIR/de.db"
+  sqlite3 "$db" < "$ROOT/schema.sql"
+  sqlite3 "$db" "INSERT INTO raw_invoices (from_date) VALUES ('01.06.2026');"
+  sqlite3 "$db" < "$ROOT/normalize.sql"
+  [ "$(sqlite3 "$db" 'SELECT from_date FROM invoices;')" = "2026-06-01" ]
+}
+
 @test "an untouched box across the 15-Jun hike is scored month by month: its optimal rises 6.49 (Jun) to 8.49 (Jul) as the cheap alternative recedes" {
   a="$BATS_TEST_TMPDIR/uha"; jun2026_assets "$a"
   d="$BATS_TEST_TMPDIR/uhd"; mkdir -p "$d"; jun2026_untouched_invoice "$d/i.csv"

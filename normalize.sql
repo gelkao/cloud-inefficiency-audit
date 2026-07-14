@@ -11,7 +11,9 @@ SELECT
   description,
   reference,
   CAST(quantity AS REAL) AS quantity,
-  from_date,
+  CASE WHEN is_de
+       THEN substr(from_date, 7, 4) || '-' || substr(from_date, 4, 2) || '-' || substr(from_date, 1, 2)
+       ELSE from_date END                                          AS from_date,
   until_date,
   condition,
   unit,
