@@ -11,7 +11,9 @@ SELECT
   product,
   description,
   reference,
-  CAST(quantity AS REAL) AS quantity,
+  CAST(CASE WHEN is_de THEN REPLACE(REPLACE(quantity, '.', ''), ',', '.')
+            ELSE REPLACE(quantity, ',', '')
+       END AS REAL)                                                AS quantity,
   CASE WHEN is_de
        THEN substr(from_date, 7, 4) || '-' || substr(from_date, 4, 2) || '-' || substr(from_date, 1, 2)
        ELSE from_date END                                          AS from_date,
