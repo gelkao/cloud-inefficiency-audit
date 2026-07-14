@@ -2,7 +2,8 @@ DROP TABLE IF EXISTS invoices;
 CREATE TABLE invoices AS
 WITH tagged AS (
   SELECT *,
-         from_date LIKE '__.__.____' AS is_de
+         from_date LIKE '__.__.____' AS is_de,
+         TRIM(REPLACE(REPLACE(total, '€', ''), '$', '')) AS amount
   FROM raw_invoices
 )
 SELECT
@@ -19,6 +20,8 @@ SELECT
   unit,
   external_id,
   price,
-  CAST(TRIM(REPLACE(REPLACE(REPLACE(total, '€', ''), '$', ''), ',', '')) AS REAL) AS total,
-  CASE WHEN total LIKE '%$%' THEN 'usd' ELSE 'eur' END              AS currency
+  CAST(CASE WHEN is_de THEN REPLACE(REPLACE(amount, '.', ''), ',', '.')
+            ELSE REPLACE(amount, ',', '')
+       END AS REAL)                                                AS total,
+  CASE WHEN total LIKE '%$%' THEN 'usd' ELSE 'eur' END             AS currency
 FROM tagged;
