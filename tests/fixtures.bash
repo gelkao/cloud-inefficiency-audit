@@ -46,6 +46,52 @@ cx33_invoice_de() {
 CSV
 }
 
+dedicated_assets() {
+  stage_assets "$1"
+  write_prices "$1" <<CSV
+cx33,eu,eur,2026-06-15,0.0136,8.49
+ccx13,eu,eur,2026-06-15,0.0685,42.99
+CSV
+  write_types "$1" <<CSV
+cx33,4,8
+ccx13,2,8
+CSV
+}
+
+dedicated_invoice() {
+  write_invoice "$1" <<CSV
+"P","CCX13 Cloud Server",,,"1.0000",2026-07-01,2026-07-31,,"Months","d1",,"€ 42.9900"
+CSV
+}
+
+dedicated_mixed_assets() {
+  stage_assets "$1"
+  write_prices "$1" <<CSV
+cx33,eu,eur,2026-06-15,0.0136,8.49
+cax21,eu,eur,2026-06-15,0.0060,3.79
+ccx13,eu,eur,2026-06-15,0.0685,42.99
+CSV
+  write_types "$1" <<CSV
+cx33,4,8
+cax21,4,8
+ccx13,2,8
+CSV
+}
+
+dedicated_mixed_invoice() {
+  write_invoice "$1" <<CSV
+"P","CX33 Cloud Server",,,"1.0000",2026-07-01,2026-07-31,,"Months","x1",,"€ 8.4900"
+"P","CCX13 Cloud Server",,,"1.0000",2026-07-01,2026-07-31,,"Months","d1",,"€ 42.9900"
+CSV
+}
+
+dedicated_hourly_monthly_invoice() {
+  write_invoice "$1" <<CSV
+"P","CCX13 Cloud Server",,,"240",2026-07-01,2026-07-31,,"Hours","h1",,"€ 16.4400"
+"P","CCX13 Cloud Server",,,"1.0000",2026-07-01,2026-07-31,,"Months","d1",,"€ 42.9900"
+CSV
+}
+
 rounding_assets() {
   stage_assets "$1"
   write_prices "$1" <<CSV

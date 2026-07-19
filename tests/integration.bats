@@ -88,7 +88,7 @@ need_data() {  # audit needs only local CSVs — no network, no credentials
   run "$ROOT/gelkao" -q -d "$ROOT/examples" -f "$BATS_TEST_TMPDIR/example.db" audit
   [ "$status" -eq 0 ]
   [[ "$output" =~ price\ group\ +:\ eu ]]
-  [[ "$output" =~ would\ save\ :\ 3[0-9]\.[0-9]+% ]]
+  [[ "$output" =~ would\ save\ :\ [23][0-9]\.[0-9]+% ]]
   [ -f "$BATS_TEST_TMPDIR/example.db" ]
   [ ! -f "$ROOT/examples/gelkao.db" ]
 }

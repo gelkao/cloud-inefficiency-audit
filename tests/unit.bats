@@ -137,6 +137,36 @@ HTML
   [ "$(sqlite3 "$db" "SELECT printf('%.2f|%.2f', paid, optimal) FROM priced;")" = "4.99|3.79" ]
 }
 
+@test "build_db shows no phantom waste on a dedicated (ccx) line" {
+  a="$BATS_TEST_TMPDIR/deda"; dedicated_assets "$a"
+  d="$BATS_TEST_TMPDIR/dedi"; mkdir -p "$d"; dedicated_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/ded.db"
+  run build_db "$db" "$a" "$d"
+  [ "$status" -eq 0 ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f|%.2f', paid, optimal) FROM priced;")" = "42.99|42.99" ]
+}
+
+@test "build_db still optimizes shared lines while zeroing dedicated ones in one invoice" {
+  a="$BATS_TEST_TMPDIR/mixa"; dedicated_mixed_assets "$a"
+  d="$BATS_TEST_TMPDIR/mixi"; mkdir -p "$d"; dedicated_mixed_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/mix.db"
+  run build_db "$db" "$a" "$d"
+  [ "$status" -eq 0 ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced WHERE box='x1';")" = "3.79" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f|%.2f', paid, optimal) FROM priced WHERE box='d1';")" = "42.99|42.99" ]
+}
+
+@test "build_db zeroes both hourly and monthly dedicated lines" {
+  a="$BATS_TEST_TMPDIR/hma"; dedicated_assets "$a"
+  d="$BATS_TEST_TMPDIR/hmi"; mkdir -p "$d"; dedicated_hourly_monthly_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/hm.db"
+  run build_db "$db" "$a" "$d"
+  [ "$status" -eq 0 ]
+  [ "$(sqlite3 "$db" "SELECT count(*) FROM priced WHERE paid <> optimal;")" = "0" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced WHERE kind='hourly';")" = "16.44" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced WHERE kind='monthly';")" = "42.99" ]
+}
+
 @test "build_db audits a German-locale invoice identically to English (end-to-end)" {
   a="$BATS_TEST_TMPDIR/dea"; fixture_assets "$a"
   d="$BATS_TEST_TMPDIR/ded"; mkdir -p "$d"; cx33_invoice_de "$d/i.csv"

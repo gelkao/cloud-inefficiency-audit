@@ -31,7 +31,7 @@ CREATE TABLE priced AS
 WITH base AS (
   SELECT
     li.box, li.date, li.month, li.grouping, li.type, li.kind, li.qty, li.currency,
-    li.paid, st.ram_gb, st.vcpu,
+    li.paid, st.ram_gb, st.vcpu, li.type LIKE 'ccx%' AS is_dedicated,
     ( SELECT MIN(
         ( SELECT p.price_monthly FROM prices p
            WHERE p.type = cand.type AND p.currency = li.currency
@@ -69,12 +69,15 @@ locked AS (
 )
 SELECT
   box, date, month, grouping, type, kind, qty, currency, paid,
-  MIN( COALESCE( (CASE WHEN kind = 'hourly' THEN cheapest_hourly ELSE cheapest_monthly END) * qty, paid ), paid ) AS optimal,
-  MIN( COALESCE(
-         ( CASE WHEN kind = 'monthly'
-                THEN COALESCE( min(lm_market, lm_bob), lm_market, lm_bob )
-                ELSE COALESCE( min(lh_market, lh_bob), lh_market, lh_bob )
-           END ) * qty,
-         paid ),
-       paid ) AS optimal_locked
+  MIN( CASE WHEN is_dedicated THEN paid
+            ELSE COALESCE( (CASE WHEN kind = 'hourly' THEN cheapest_hourly ELSE cheapest_monthly END) * qty, paid )
+       END, paid ) AS optimal,
+  MIN( CASE WHEN is_dedicated THEN paid
+            ELSE COALESCE(
+                   ( CASE WHEN kind = 'monthly'
+                          THEN COALESCE( min(lm_market, lm_bob), lm_market, lm_bob )
+                          ELSE COALESCE( min(lh_market, lh_bob), lh_market, lh_bob )
+                     END ) * qty,
+                   paid )
+       END, paid ) AS optimal_locked
 FROM locked;
