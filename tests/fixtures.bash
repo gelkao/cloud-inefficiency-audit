@@ -197,3 +197,11 @@ jun2026_ephemeral_invoice() {
 "P","CPX31 Cloud Server",eph,,"336",2026-06-16,2026-06-30,,"Hours","eph",,"€ 22.08"
 CSV
 }
+
+jun2026_hourly_lock_invoice() {
+  write_invoice "$1" <<CSV
+"P","CPX31 Cloud Server",,,"1.0000",2026-05-01,2026-05-31,,"Months","anchor",,"€ 20.9900"
+"P","CPX31 Cloud Server",,,"240",2026-05-01,2026-05-31,,"Hours","b1",,"€ 8.06"
+"P","CPX31 Cloud Server",,,"240",2026-07-01,2026-07-31,,"Hours","b1",,"€ 15.77"
+CSV
+}

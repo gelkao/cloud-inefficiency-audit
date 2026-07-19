@@ -284,6 +284,14 @@ CSV
   [ "$(sqlite3 "$db" "SELECT printf('%.2f|%.2f', paid, optimal) FROM priced WHERE kind='hourly';")" = "8.06|2.50" ]
 }
 
+@test "scoring 2: an hourly box's lock holds the cheapest rate from an earlier month across the hike, not the risen rate" {
+  a="$BATS_TEST_TMPDIR/hla"; jun2026_assets "$a"
+  d="$BATS_TEST_TMPDIR/hld"; mkdir -p "$d"; jun2026_hourly_lock_invoice "$d/i.csv"
+  db="$BATS_TEST_TMPDIR/hl.db"; build_db "$db" "$a" "$d" >/dev/null
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal_locked) FROM priced WHERE box='b1' AND month='2026-07';")" = "2.50" ]
+  [ "$(sqlite3 "$db" "SELECT printf('%.2f', optimal) FROM priced WHERE box='b1' AND month='2026-07';")" = "3.26" ]
+}
+
 @test "scoring 2: the lock resets across a non-grandfathered hike (only 15-Jun-2026 grandfathers), so a pre-April rate is not carried past it" {
   a="$BATS_TEST_TMPDIR/gfa"; jun2026_reprice_assets "$a"
   d="$BATS_TEST_TMPDIR/gfd"; mkdir -p "$d"; jun2026_across_april_invoice "$d/i.csv"
